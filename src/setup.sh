@@ -1048,4 +1048,10 @@ EOL
     echo -e "${CYAN}Press Enter to continue...${NC}"
     read -r
 }
-display_menu
+
+while true; do
+    display_menu
+    echo -e "${NC}choose an option [1-9]:${NC} \c"
+    read -r USER_CHOICE
+    select_stuff "$USER_CHOICE"
+done
