@@ -169,17 +169,16 @@ display_menu() {
     echo -e "${WHITE}  1)${YELLOW} Setup Azumi WG dashboard${NC}"
     echo -e "${WHITE}  2)${LIGHT_GREEN} Add/Remove Wireguard Interface${NC}"
     echo -e "${WHITE}  3)${RED} Uninstall panel and core${NC}"
-    echo -e "${WHITE}  4)${CYAN} Restart Wireguard-Panel / Tg-Bot / Wg-core${NC}" && echo
-    echo -e "${WHITE}  5)${YELLOW} IPV4/6 Forward${NC}"
+    echo -e "${WHITE}  4)${CYAN} Restart Wireguard-Panel / Tg-Bot / Wg-core${NC}"
     echo -e "${WHITE}  0)${CYAN} View Detailed Wireguard Status${NC}" && echo
     echo -e "${WHITE}  q)${RED} Exit${NC}"
     echo -e "${CYAN}═════════════════════════════════════════════════════════════════════${NC}"
 }
 
-
 select_stuff() {
     case $1 in
-        1) install_requirements 
+        1) install_requirements
+            manage_sysctl
             setup_virtualenv
             create_config
             wireguardconf
@@ -188,7 +187,6 @@ select_stuff() {
         2) wireguardconf_menu ;;
         3) uninstall_mnu ;;
         4) restart_services ;;
-        5) sysctl_menu ;;
         0) wireguard_detailed_stats ;;
         [qQ]) echo -e "${LIGHT_GREEN}Exiting...${NC}" && exit 0 ;;
         *) echo -e "${RED}Wrong choice. Please choose a valid option.${NC}" ;;
@@ -1001,90 +999,53 @@ EOL
     echo -e "${CYAN}Press Enter to continue...${NC}"
     read -r
 }
-SYSCTL_CONF="/etc/sysctl.conf"
-BACKUP_CONF="/etc/sysctl.conf.backup"
+manage_sysctl() {
+    local SYSCTL_CONF="/etc/sysctl.conf"
+    local BACKUP_CONF="/etc/sysctl.conf.backup"
+    declare -A SETTINGS=(
+        ["net.ipv4.ip_forward"]="1"
+        ["net.ipv6.conf.all.disable_ipv6"]="0"
+        ["net.ipv6.conf.default.disable_ipv6"]="0"
+        ["net.ipv6.conf.all.forwarding"]="1"
+    )
 
-declare -A SETTINGS=(
-    ["net.ipv4.ip_forward"]="1"
-    ["net.ipv6.conf.all.disable_ipv6"]="0"
-    ["net.ipv6.conf.default.disable_ipv6"]="0"
-    ["net.ipv6.conf.all.forwarding"]="1"
-)
-
-backup_sysctl() {
     if [ ! -f "$BACKUP_CONF" ]; then
-        sudo cp "$SYSCTL_CONF" "$BACKUP_CONF"
-        echo -e "\033[93mBackup created at $BACKUP_CONF\033[0m"
+        sudo cp "$SYSCTL_CONF" "$BACKUP_CONF" || {
+            echo -e "${ERROR}Failed to create backup. Exiting.${NC}"
+            exit 1
+        }
+        echo -e "${INFO}Backup created at $BACKUP_CONF${NC}"
     else
-        echo -e "\033[92mBackup already exists at $BACKUP_CONF\033[0m"
+        echo -e "${INFO}Backup already exists at $BACKUP_CONF${NC}"
     fi
-}
-
-apply() {
-    local current_settings
-    declare -A current_settings
-
-    while IFS='=' read -r key value; do
-        if [[ "$key" =~ ^# ]] || [[ -z "$key" ]]; then
-            continue
-        fi
-        current_settings["$key"]=$(echo "$value" | xargs)  
-    done < "$SYSCTL_CONF"
 
     for key in "${!SETTINGS[@]}"; do
         value="${SETTINGS[$key]}"
-        if [[ "${current_settings[$key]}" != "$value" ]]; then
-            echo "$key = $value" | sudo tee -a "$SYSCTL_CONF" > /dev/null
-            sudo sysctl -w "$key=$value"
-            echo -e "\033[92mApplied \033[94m$key \033[93m= \033[94m$value\033[0m"
+        current_value=$(grep -E "^$key" "$SYSCTL_CONF" | awk -F '=' '{print $2}' | xargs)
+        if [[ "$current_value" != "$value" ]]; then
+            echo "$key = $value" | sudo tee -a "$SYSCTL_CONF" > /dev/null || {
+                echo -e "${ERROR}Failed to write $key=$value to $SYSCTL_CONF. Restoring from backup.${NC}"
+                sudo cp "$BACKUP_CONF" "$SYSCTL_CONF"
+                sudo sysctl -p
+                exit 1
+            }
+            sudo sysctl -w "$key=$value" || {
+                echo -e "${ERROR}Failed to apply $key=$value. Restoring from backup.${NC}"
+                sudo cp "$BACKUP_CONF" "$SYSCTL_CONF"
+                sudo sysctl -p
+                exit 1
+            }
+            echo -e "${INFO}Applied $key=$value${NC}"
         else
-            echo -e "\033[94m$key\033[93m is already set to $value\033[0m"
+            echo -e "${INFO}$key is already set to $value${NC}"
         fi
     done
-}
 
-restore_backup() {
-    if [ -f "$BACKUP_CONF" ]; then
+    sudo sysctl -p || {
+        echo -e "${ERROR}Failed to reload sysctl settings. Restoring from backup.${NC}"
         sudo cp "$BACKUP_CONF" "$SYSCTL_CONF"
         sudo sysctl -p
-        echo -e "\033[93mRestored configuration from $BACKUP_CONF\033[0m"
-    else
-        echo -e "\033[91mNo backup found at $BACKUP_CONF\033[0m"
-    fi
+        exit 1
+    }
 }
 
-sysctl_menu() {
-    echo -e "\033[92m ^ ^\033[0m"
-    echo -e "\033[92m(\033[91mO,O\033[92m)\033[0m"
-    echo -e "\033[92m(   ) \033[92mWireguard Service env\033[0m"
-    echo -e '\033[92m "-"\033[93m══════════════════════════════════\033[0m'
-    echo -e "\033[93mChoose an option:\033[0m"
-    echo -e "\033[92m1.\033[0m Backup sysctl configuration"
-    echo -e "\033[92m2.\033[0m Apply sysctl settings"
-    echo -e "\033[92m3.\033[0m Restore sysctl configuration from backup"
-    echo -e '\033[93m══════════════════════════════════\033[0m'
-    read -rp "Choose [1-3]: " CHOICE
-
-    case "$CHOICE" in
-        1)
-            backup_sysctl
-            ;;
-        2)
-            apply
-            ;;
-        3)
-            restore_backup
-            ;;
-        *)
-            echo -e "\033[91mWrong choice. Exiting.\033[0m"
-            ;;
-    esac
-}
-
-
-while true; do
-    display_menu
-    echo -e "${NC}choose an option [1-9]:${NC} \c"
-    read -r USER_CHOICE
-    select_stuff "$USER_CHOICE"
-done
