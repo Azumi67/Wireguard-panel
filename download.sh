@@ -13,7 +13,7 @@ sudo apt update && sudo apt install -y git
 
 # Define target directory and repo URL
 TARGET_DIR="/usr/local/bin/Wireguard-panel"
-REPO_URL="https://github.com/opiran-club/Wireguard-panel.git"
+REPO_URL="https://github.com/Azumi67/Wireguard-panel.git"
 
 # Remove existing setup directory if it exists
 if [ -d "$TARGET_DIR" ]; then
