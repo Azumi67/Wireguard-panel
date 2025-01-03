@@ -411,7 +411,7 @@ install_requirements() {
     }
 
     echo -e "${INFO}[INFO] Enabling and starting systemd-resolved...${NC}"
-    sudo systemctl enable --now systemd-resolved || {
+    apt-get install systemd-resolved && systemctl enable --now systemd-resolved || {
         echo -e "${ERROR}[ERROR] Failed to enable systemd-resolved.${NC}"
         exit 1
     }
