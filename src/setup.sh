@@ -1004,14 +1004,10 @@ declare -A SETTINGS=(
 
 backup_sysctl() {
     if [ ! -f "$BACKUP_CONF" ]; then
-        if [ -f "$SYSCTL_CONF" ]; then
-            sudo cp "$SYSCTL_CONF" "$BACKUP_CONF"
-            echo -e "$(date +'%Y-%m-%d %H:%M:%S') \033[93mBackup created at $BACKUP_CONF\033[0m"
-        else
-            echo -e "$(date +'%Y-%m-%d %H:%M:%S') \033[91mError: $SYSCTL_CONF not found\033[0m"
-        fi
+        sudo cp "$SYSCTL_CONF" "$BACKUP_CONF"
+        echo -e "\033[93mBackup created at $BACKUP_CONF\033[0m"
     else
-        echo -e "$(date +'%Y-%m-%d %H:%M:%S') \033[92mBackup already exists at $BACKUP_CONF\033[0m"
+        echo -e "\033[92mBackup already exists at $BACKUP_CONF\033[0m"
     fi
 }
 
@@ -1019,26 +1015,21 @@ apply() {
     local current_settings
     declare -A current_settings
 
-    # Read current settings from sysctl.conf
     while IFS='=' read -r key value; do
-        key=$(echo "$key" | xargs)
-        value=$(echo "$value" | xargs)
-        if [[ "$key" != \#* && -n "$key" ]]; then
-            current_settings["$key"]="$value"
+        if [[ "$key" =~ ^# ]] || [[ -z "$key" ]]; then
+            continue
         fi
+        current_settings["$key"]=$(echo "$value" | xargs)  
     done < "$SYSCTL_CONF"
 
     for key in "${!SETTINGS[@]}"; do
         value="${SETTINGS[$key]}"
         if [[ "${current_settings[$key]}" != "$value" ]]; then
-            # Ensure the key is not duplicated in sysctl.conf
-            if ! grep -q "^$key" "$SYSCTL_CONF"; then
-                echo "$key = $value" | sudo tee -a "$SYSCTL_CONF" > /dev/null
-            fi
+            echo "$key = $value" | sudo tee -a "$SYSCTL_CONF" > /dev/null
             sudo sysctl -w "$key=$value"
-            echo -e "$(date +'%Y-%m-%d %H:%M:%S') \033[92mApplied \033[94m$key \033[93m= \033[94m$value\033[0m"
+            echo -e "\033[92mApplied \033[94m$key \033[93m= \033[94m$value\033[0m"
         else
-            echo -e "$(date +'%Y-%m-%d %H:%M:%S') \033[94m$key\033[93m is already set to $value\033[0m"
+            echo -e "\033[94m$key\033[93m is already set to $value\033[0m"
         fi
     done
 }
@@ -1047,9 +1038,9 @@ restore_backup() {
     if [ -f "$BACKUP_CONF" ]; then
         sudo cp "$BACKUP_CONF" "$SYSCTL_CONF"
         sudo sysctl -p
-        echo -e "$(date +'%Y-%m-%d %H:%M:%S') \033[93mRestored configuration from $BACKUP_CONF\033[0m"
+        echo -e "\033[93mRestored configuration from $BACKUP_CONF\033[0m"
     else
-        echo -e "$(date +'%Y-%m-%d %H:%M:%S') \033[91mError: No backup found at $BACKUP_CONF\033[0m"
+        echo -e "\033[91mNo backup found at $BACKUP_CONF\033[0m"
     fi
 }
 
@@ -1076,15 +1067,15 @@ sysctl_menu() {
             restore_backup
             ;;
         *)
-            echo -e "$(date +'%Y-%m-%d %H:%M:%S') \033[91mWrong choice. Exiting.\033[0m"
+            echo -e "\033[91mWrong choice. Exiting.\033[0m"
             ;;
     esac
 }
 
-# Main menu loop
+
 while true; do
-    sysctl_menu
-    echo -e "${NC}choose an option [1-3]:${NC} \c"
+    display_menu
+    echo -e "${NC}choose an option [1-9]:${NC} \c"
     read -r USER_CHOICE
     select_stuff "$USER_CHOICE"
 done
