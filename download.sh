@@ -10,7 +10,7 @@ echo -e "${BLUE}Updating & installing Git...${NC}"
 sudo apt update && sudo apt install -y git
 
 TARGET_DIR="/usr/local/bin/Wireguard-panel"
-REPO_URL="https://github.com/Azumi67/Wireguard-panel.git"
+REPO_URL="https://github.com/opiran-club/Wireguard-panel.git"
 
 if [ -d "$TARGET_DIR" ]; then
     echo -e "${YELLOW}Setup dir $TARGET_DIR already exists. Removing it for a fresh copy.${NC}"
