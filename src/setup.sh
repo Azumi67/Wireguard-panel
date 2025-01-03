@@ -92,7 +92,6 @@ wireguard_detailed_stats() {
     echo -e "${CYAN}Press Enter to return to the menu...${NC}" && read
 }
 
-
 display_menu() {
     clear
     display_logo
@@ -174,7 +173,7 @@ display_menu() {
     echo -e "${WHITE}  q)${RED} Exit${NC}"
     echo -e "${CYAN}═════════════════════════════════════════════════════════════════════${NC}"
 }
-
+display_menu
 select_stuff() {
     case $1 in
         1) install_requirements
