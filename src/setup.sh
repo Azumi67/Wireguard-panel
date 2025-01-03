@@ -895,7 +895,6 @@ EOL
     else
         echo -e "${RED}[ERROR] Couldn't create config.yaml. Please check for errors.${NC}"
     fi
-show_flask_info
 }
 
 wireguard_panel() {
