@@ -664,7 +664,6 @@ show_flask_info() {
         echo -e "${CYAN}You can use this IP to access the app directly.${NC}"
         echo -e "\033[93m══════════════════════════════════\033[0m"
     fi
-    echo -e "${CYAN}Press Enter to continue...${NC}" && read
 }
 
 wireguardconf() {
@@ -1107,6 +1106,66 @@ EOL
 
     echo -e "${CYAN}Press Enter to back the main menu...${NC}"
     read -r
+}
+
+wireguard_panel() {
+    echo -e "\033[92m ^ ^\033[0m"
+    echo -e "\033[92m(\033[91mO,O\033[92m)\033[0m"
+    echo -e "\033[92m(   ) \033[92mWireguard Service env\033[0m"
+    echo -e '\033[92m "-"\033[93m══════════════════════════════════\033[0m'
+    echo -e "${INFO}[INFO]Wireguard Service${NC}"
+    echo -e '\033[93m══════════════════════════════════\033[0m'
+
+    APP_FILE="$SCRIPT_DIR/app.py"
+    VENV_DIR="$SCRIPT_DIR/venv"
+    SERVICE_FILE="/etc/systemd/system/wireguard-panel.service"
+
+    if [ ! -f "$APP_FILE" ]; then
+        echo -e "${RED}[Error] $APP_FILE not found. make sure that Wireguard panel is in the correct directory.${NC}"
+        echo -e "${CYAN}Press Enter to continue...${NC}" && read
+        return 1
+    fi
+
+    if [ ! -d "$VENV_DIR" ]; then
+        echo -e "${RED}[Error] Virtual env not found in $VENV_DIR. install it first from the script menu.${NC}"
+        echo -e "${CYAN}Press Enter to continue...${NC}" && read
+        return 1
+    fi
+
+    sudo bash -c "cat > $SERVICE_FILE" <<EOL
+[Unit]
+Description=Wireguard Panel
+After=network.target
+
+[Service]
+User=$(whoami)
+WorkingDirectory=$SCRIPT_DIR
+ExecStart=$VENV_DIR/bin/python3 $APP_FILE
+Restart=always
+Environment=PATH=$VENV_DIR/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=LANG=en_US.UTF-8
+Environment=LC_ALL=en_US.UTF-8
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+    sudo chmod 644 "$SERVICE_FILE"
+    sudo systemctl daemon-reload
+    sudo systemctl enable wireguard-panel.service
+    sudo systemctl restart wireguard-panel.service
+
+    if [ "$(sudo systemctl is-active wireguard-panel.service)" = "active" ]; then
+        echo -e "${LIGHT_GREEN}[Success] Wireguard Panel service is running successfully.${NC}"
+    else
+        echo -e "${RED}[Error] Couldn't start the Wireguard Panel service.${NC}"
+        echo -e "${CYAN}Press Enter to continue...${NC}" && read
+        return 1
+    fi
+
+    show_flask_info
+
+    echo -e "${CYAN}Press Enter to continue...${NC}" && read
 }
 
 while true; do
