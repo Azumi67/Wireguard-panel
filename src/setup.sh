@@ -14,43 +14,6 @@ WARNING="\e[33m"
 ERROR="\e[31m"      
 RED="\e[31m"        
 
-logo=$(cat << "EOF"
-\033[1;96m          
-
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⢨⠀⠀⠀⢀⠤⠂⠁\033[1;96m⢠⣾⡟⣧⠿⣝⣮⣽⢺⣝⣳⡽⣎⢷⣫⡟⡵⡿⣵⢫⡷⣾⢷⣭⢻⣦⡄\033[1;93m⠤⡸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠘⡄⠀⠀⠓⠂⠀\033[1;96m⣴⣿⢷⡿⣝⣻⣏⡷⣾⣟⡼⣣⢟⣼⣣⢟⣯⢗⣻⣽⣏⡾⡽⣟⣧⠿⡼⣿⣦\033[1;93m⣃⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⢀⠇⠀⠀⠀⠀\033[1;96m⣼⣿⢿⣼⡻⣼⡟⣼⣧⢿⣿⣸⡧⠿⠃⢿⣜⣻⢿⣤⣛⣿⢧⣻⢻⢿⡿⢧⣛⣿⣧⠀\033[1;93m⠛⠤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠀⢸⠁⠀⠀⠀⠀\033[1;96m⣼⣻⡿⣾⣳⡽⣾⣽⡷⣻⣞⢿⣫⠕⣫⣫⣸⢮⣝⡇⠱⣏⣾⣻⡽⣻⣮⣿⣻⡜⣞⡿⣷\033[1;93m⢀⠀⠀⠑⠢⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠘⣧⠀⠀⠀\033[1;96m⣼⣳⢯⣿⣗⣿⣏⣿⠆⣟⣿⣵⢛⣵⡿⣿⣏⣟⡾⣜⣻⠀⢻⡖⣷⢳⣏⡶⣻⡧⣟⡼⣻⡽⣇\033[1;93m⠁⠢⡀⠠⡀⠑⡄⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠀⠈⢦⠀\033[1;96m⣰⣯⣟⢯⣿⢾⣹⢾⡟⠰⣏⡾⣾⣟⡷⣿⣻⣽⣷⡶⣟⠿⡆⠀⢻⣝⣯⢷⣹⢧⣿⢧⡻⣽⣳⢽⡀\033[1;93m⠀⠈⠀⠈⠂⡼⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠀⠀⡀⢵\033[1;96m⣟⣾⡟⣾⣿⣻⢽⣺⠇⠀⣿⡱⢿⡞⣵⡳⣭⣿⡜⣿⣭⣻⣷⠲⠤⢿⣾⢯⢯⣛⢿⣳⡝⣾⣿⢭⡇⠀\033[1;93m⠀⠀⠀⡰⠁⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⢀⠤⠊⠀\033[1;96m⣼⢻⣿⢞⣯⢿⡽⣸⣹⡆⠀⢷⣏⢯⣿⣧⣛⠶⣯⢿⣽⣷⣧⣛⣦⠀⠀⠙⢿⣳⣽⣿⣣⢟⡶⣿⣫⡇⠀⠀\033[1;93m⠀⠰⠁⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⣠⠖⠁⠀⠀⡄\033[1;96m⡿⣯⣷⣻⡽⣞⡟⣿⣿⣟⠉⠈⢯⣗⣻⣕⢯⣛⡞⣯⢮⣷⣭⡚⠓⠋⠀⠀⠀⠈⠉⣿⡽⣎⠷⡏⡷⣷⠀⠀⠀\033[1;93m⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠐⣇⠀⠀⢀⠊\033[1;96m⣼⣇⣿⡗⣿⣽⣷⡿⣿⣱⡿⣆⠀⠀⠙⠒⠛⠓⠋⠉⠉⠀⠀⠀\033[1;91m⢠⣴⣯⣶⣶⣤⡀\033[1;96m ⠀⣿⣟⡼⣛⡇⣟⣿⡆\033[1;93m⡀⠀⢀⠇⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠀⠘⢤⠀⠃⠌\033[1;96m⣸⣿⢾⡽⣹⣾⠹⣞⡵⣳⣽⡽⣖⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;91m⣤⣖⣻⣾⣝⢿⡄\033[1;96m ⢸⣯⢳⣏⡿⣏⣾⢧\033[1;93m⠈⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠀⠘⠀⠈⠀\033[1;96m⡿⣿⣻⡽⣽⣿⢧⠌⠉\033[1;91m⠉⣴⣿⣿⣫⣅⡀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣛⠿⠿⢟⢙⡄⠙\033[1;96m ⠘⣯⢳⣞⡟⣯⢾⣻⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠀⡇⠀⠀⠀\033[1;96m⡿⣿⣿⢵⣫⣿⣆⠁⠂\033[1;91m⣼⡿⢹⣿⡿⠽⠟⢢⠀⠀⠀⠀⠀⠀⠀⢹⠀⢄⢀⠀⡿⠀⠀\033[1;96m ⢰⣯⢷⣺⣏⣯⢻⡽⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠀⡇⠀⢀⠠\033[1;96m⣿⣿⢾⣛⡶⣽⠈⢓⠀\033[1;91m⢻⠁⢸⠇⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠑⠠⠤⠔⠂⠀⠀\033[1;96m ⢸⣿⢮⣽⠿⣜⣻⡝⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠀⠑⠊⠁\033[1;96m⢠⡷⡇⣿⣿⢼⣹⡀⠀⠑⢄⠀\033[1;91m⠀⠃⠌⣁⠦⠟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠂⠀⠀\033[1;96m⢀⣿⢾⡝⣾⡽⣺⢽⣹⣽⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣻⢽⣻⡟⣮⣝⡷⢦⣄⣄⣢⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣾⣯⢿⡺⣟⢷⡹⢾⣷⡞⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣟⡿⣎⢿⡽⣳⢮⣿⣹⣾⣯⡝⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠃⠀⠀⠀⠀⠀⠀⣀⣴⡟⣿⢧⣏⢷⡟⣮⠝⢿⣹⣯⡽⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣯⡷⣏⣾⡳⣽⢺⣷⡹⣟⢶⡹⣾⡽⣷⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠔⣾⢯⣷⡇⣿⢳⣎⢿⡞⣽⢦⣼⡽⣧⢻⡽⣆⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣟⢾⡷⣭⣿⢳⣭⢻⣷⡻⣜⣻⡵⣻⡼⣿⠾⠫\033[1;96m⣽⣟⣶⣶⣶⠒⠒⠂⠉⠀\033[1;96m⢸⣽⢺⡷⣷⣯⢗⣮⣟⢾⢧⣻⠼⡿⣿⢣⡟⣼⣆⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡾⣝⣾⢳⢧⣟⡳⣎⣿⣿⣱⢏⣾⣽⣳⠟\033[1;92m⠁⠀⡌⠈\033[1;96m⢹⡯⠟⠛⠀⠀⠀⠀⠀⠈\033[1;96m⣷⢻⣼⣽⣿⡾⣼⣏⣾⣻⡜⣯⣷⢿⣟⣼⡳⣞⣦⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⢀⣾⢿⡸⣎⠿⣾⡏⣷⣉⣷⣿⢹⣎⡿\033[1;92m⠎⡎⠀⠀⠀⡇⠀⣾⠱⡀⠀⠀⠀⠀⠀⠀⠀⠈⣹⠉⡏⠀\033[1;96m⠹⣾⣏⢹⣶⢹⣶⢿⡾⣿⢶⣿⣸⠾⣇⠀⠀⠀⠀⠀
-           \033[96m __    \033[1;94m  ________  \033[1;92m ____  ____ \033[1;93m ___      ___  \033[1;91m __     
-      \033[96m     /""\   \033[1;94m ("      "\ \033[1;92m("  _||_ " |\033[1;93m|"  \    /"  | \033[1;91m|" \    
-      \033[96m    /    \   \033[1;94m \___/   :)\033[1;92m|   (  ) : |\033[1;93m \   \  //   | \033[1;91m||  |   
-      \033[96m   /' /\  \   \033[1;94m  /  ___/ \033[1;92m(:  |  | . )\033[1;93m /\   \/.    |\033[1;91m |:  |   
-     \033[96m   //  __'  \  \033[1;94m //  \__  \033[1;92m \  \__/  / \033[1;93m|: \.        | \033[1;91m|.  |   
-      \033[96m  /  /  \   \ \033[1;94m(:   / "\ \033[1;92m /\  __  /\ \033[1;93m|.  \    /:  |\033[1;91m /\  |\ 
-      \033[96m(___/    \___) \033[1;94m\_______)\033[1;92m(__________)\033[1;93m|___|\__/|___|\033[1;91m(__\_|_) \033[1;92mAuthor: github.com/Azumi67  \033[0m         
-EOF
-)
-display_logo() {
-    echo -e "$logo"
-}
-
 wireguard_detailed_stats() {
     echo -e "${CYAN}Wireguard Detailed Status:${NC}"
     echo -e "${YELLOW}═════════════════════════════════════════════════════════════════════${NC}"
@@ -165,16 +128,12 @@ display_menu() {
 
     echo -e "${CYAN}═════════════════════════════════════════════════════════════════════${NC}"
     echo -e "${GREEN} Options:${NC}"
-    echo -e "${WHITE}  0)${CYAN} View Detailed Wireguard Status${NC}"
-    echo -e "${WHITE}  1)${YELLOW} IPV4/6 Forward${NC}"
-    echo -e "${WHITE}  2)${GREEN} Install Requirements${NC}"
-    echo -e "${WHITE}  3)${YELLOW} Set up Virtual Environment${NC}"
-    echo -e "${WHITE}  4)${BLUE} Create Flask & Gunicorn Configs${NC}"
-    echo -e "${WHITE}  5)${LIGHT_GREEN} Create Wireguard Interface${NC}"
-    echo -e "${WHITE}  6)${BLUE} Set up Permissions${NC}"
-    echo -e "${WHITE}  7)${YELLOW} Set up Wireguard Panel as a Service${NC}"
-    echo -e "${WHITE}  8)${RED} Uninstall${NC}"
-    echo -e "${WHITE}  9)${CYAN} Restart Wireguard Panel or Telegram Bot${NC}"
+    echo -e "${WHITE}  0)${CYAN} View Detailed Wireguard Status${NC}" && echo
+    echo -e "${WHITE}  1)${YELLOW} Setup Azumi WG dashboard${NC}"
+    echo -e "${WHITE}  2)${LIGHT_GREEN} Add/Remove Wireguard Interface${NC}"
+    echo -e "${WHITE}  3)${RED} Uninstall panel and core${NC}"
+    echo -e "${WHITE}  4)${CYAN} Restart Wireguard-Panel / Tg-Bot / Wg-core${NC}" && echo
+    echo -e "${WHITE}  5)${YELLOW} IPV4/6 Forward${NC}" && echo
     echo -e "${WHITE}  q)${RED} Exit${NC}"
     echo -e "${CYAN}═════════════════════════════════════════════════════════════════════${NC}"
 }
@@ -183,15 +142,16 @@ display_menu() {
 select_stuff() {
     case $1 in
         0) wireguard_detailed_stats ;;
-        1) sysctl_menu ;;
-        2) install_requirements ;;
-        3) setup_virtualenv ;;
-        4) create_config ;;
-        5) wireguardconf ;;
-        6) setup_permissions ;;
-        7) wireguard_panel ;;
-        8) uninstall_mnu ;;
-        9) restart_services ;;
+        1) install_requirements 
+            setup_virtualenv
+            create_config
+            wireguardconf
+            setup_permissions
+            wireguard_panel;;
+        2) wireguardconf ;;
+        3) uninstall_mnu ;;
+        4) restart_services ;;
+        5) sysctl_menu ;;
         q) echo -e "${LIGHT_GREEN}Exiting...${NC}" && exit 0 ;;
         *) echo -e "${RED}Wrong choice. Please choose a valid option.${NC}" ;;
     esac
@@ -203,6 +163,7 @@ restart_services() {
     echo -e "${WHITE}  1) ${YELLOW}Wireguard Panel${NC}"
     echo -e "${WHITE}  2) ${YELLOW}Telegram Bot FA${NC}"
     echo -e "${WHITE}  3) ${YELLOW}Telegram Bot EN${NC}"
+    echo -e "${WHITE}  4) ${YELLOW}Wireguard core${NC}"
     echo -e "${CYAN}════════════════════════════════════════${NC}"
     read -p "Choose an option: " choice
 
@@ -218,6 +179,10 @@ restart_services() {
         3)
             echo -e "${CYAN}Restarting Telegram Bot EN...${NC}"
             systemctl restart telegram-bot-en.service
+            ;;
+        4)
+            echo -e "${CYAN}Restarting wireguard core...${NC}"
+            systemctl restart wireguard.service
             ;;
         *)
             echo -e "${RED}Wrong choice. Returning to main menu.${NC}"
@@ -764,6 +729,7 @@ create_config() {
     echo -e "\033[92m(\033[91mO,O\033[92m)\033[0m"
     echo -e "\033[92m(   ) \033[92mFlask Setup\033[0m"
     echo -e '\033[92m "-"\033[93m══════════════════════════════════\033[0m'
+    
     echo -e "${INFO}[INFO] Creating or updating Flask setup...${NC}"
     echo -e '\033[93m══════════════════════════════════\033[0m'
 
@@ -775,7 +741,7 @@ create_config() {
             echo -e "${CYAN}[INFO] Flask Port: ${GREEN}$FLASK_PORT${NC}"
             break
         else
-            echo -e "${RED}[ERROR] Wrong port. Please enter a valid port number (1-65535).${NC}"
+            echo -e "${RED}[ERROR] Invalid port. Please enter a valid number between 1 and 65535.${NC}"
         fi
     done
 
@@ -783,17 +749,17 @@ create_config() {
     read -e FLASK_DEBUG
     FLASK_DEBUG=${FLASK_DEBUG:-no}
     FLASK_DEBUG=$(echo "$FLASK_DEBUG" | grep -iq "^y" && echo "true" || echo "false")
-    echo -e "${CYAN}[INFO] Flask Debug Mode: ${GREEN}$FLASK_DEBUG${NC}"
+    echo -e "\n${CYAN}[INFO] Flask Debug Mode: ${GREEN}$FLASK_DEBUG${NC}"
 
     while true; do
         echo -ne "${YELLOW}Enter the number of ${GREEN}Gunicorn workers ${YELLOW}[default: 2]: ${NC}"
         read -e GUNICORN_WORKERS
         GUNICORN_WORKERS=${GUNICORN_WORKERS:-2}
         if [[ "$GUNICORN_WORKERS" =~ ^[0-9]+$ ]]; then
-            echo -e "${CYAN}[INFO] Gunicorn Workers: ${GREEN}$GUNICORN_WORKERS${NC}"
+            echo -e "\n${CYAN}[INFO] Gunicorn Workers: ${GREEN}$GUNICORN_WORKERS${NC}"
             break
         else
-            echo -e "${RED}[ERROR] Wrong number of workers. Please enter a valid number.${NC}"
+            echo -e "\n${RED}[ERROR] Invalid number. Please enter a valid number.${NC}"
         fi
     done
 
@@ -802,10 +768,10 @@ create_config() {
         read -e GUNICORN_THREADS
         GUNICORN_THREADS=${GUNICORN_THREADS:-1}
         if [[ "$GUNICORN_THREADS" =~ ^[0-9]+$ ]]; then
-            echo -e "${CYAN}[INFO] Gunicorn Threads: ${GREEN}$GUNICORN_THREADS${NC}"
+            echo -e "\n${CYAN}[INFO] Gunicorn Threads: ${GREEN}$GUNICORN_THREADS${NC}"
             break
         else
-            echo -e "${RED}[ERROR] Wrong number of threads. Please enter a valid number.${NC}"
+            echo -e "\n${RED}[ERROR] Invalid number. Please enter a valid number.${NC}"
         fi
     done
 
@@ -814,10 +780,10 @@ create_config() {
         read -e GUNICORN_TIMEOUT
         GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT:-120}
         if [[ "$GUNICORN_TIMEOUT" =~ ^[0-9]+$ ]]; then
-            echo -e "${CYAN}[INFO] Gunicorn Timeout: ${GREEN}$GUNICORN_TIMEOUT${NC}"
+            echo -e "\n${CYAN}[INFO] Gunicorn Timeout: ${GREEN}$GUNICORN_TIMEOUT${NC}"
             break
         else
-            echo -e "${RED}[ERROR] Wrong timeout. Please enter a valid number.${NC}"
+            echo -e "\n${RED}[ERROR] Invalid timeout. Please enter a valid number.${NC}"
         fi
     done
 
@@ -826,10 +792,10 @@ create_config() {
         read -e GUNICORN_LOGLEVEL
         GUNICORN_LOGLEVEL=${GUNICORN_LOGLEVEL:-info}
         if [[ "$GUNICORN_LOGLEVEL" =~ ^(debug|info|warning|error|critical)$ ]]; then
-            echo -e "${CYAN}[INFO] Gunicorn Log Level: ${GREEN}$GUNICORN_LOGLEVEL${NC}"
+            echo -e "\n${CYAN}[INFO] Gunicorn Log Level: ${GREEN}$GUNICORN_LOGLEVEL${NC}"
             break
         else
-            echo -e "${RED}[ERROR] Wrong log level. Valid options: debug, info, warning, error, critical.${NC}"
+            echo -e "\n${RED}[ERROR] Invalid log level. Valid options: debug, info, warning, error, critical.${NC}"
         fi
     done
 
@@ -837,10 +803,10 @@ create_config() {
         echo -ne "${YELLOW}Enter the ${GREEN}Flask ${YELLOW}secret key ${NC}(used for session management): ${NC}"
         read -e FLASK_SECRET_KEY
         if [ -n "$FLASK_SECRET_KEY" ]; then
-            echo -e "${CYAN}[INFO] Flask Secret Key: ${GREEN}$FLASK_SECRET_KEY${NC}"
+            echo -e "\n${CYAN}[INFO] Flask Secret Key: ${GREEN}$FLASK_SECRET_KEY${NC}"
             break
         else
-            echo -e "${RED}[ERROR] Secret key cannot be empty. Please enter a valid value.${NC}"
+            echo -e "\n${RED}[ERROR] Secret key cannot be empty. Please enter a valid value.${NC}"
         fi
     done
 
@@ -878,6 +844,7 @@ EOL
 
     echo -e "${CYAN}Press Enter to continue...${NC}" && read
 }
+
 
 
 wireguard_panel() {
@@ -1028,4 +995,3 @@ while true; do
     read -r USER_CHOICE
     select_stuff "$USER_CHOICE"
 done
-
