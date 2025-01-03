@@ -165,13 +165,13 @@ display_menu() {
     fi
 
     echo -e "${CYAN}═════════════════════════════════════════════════════════════════════${NC}"
-    echo -e "${GREEN} Options:${NC}"
-    echo -e "${WHITE}  0)${CYAN} View Detailed Wireguard Status${NC}" && echo
+    echo -e "${GREEN} Options:${NC}" && echo
     echo -e "${WHITE}  1)${YELLOW} Setup Azumi WG dashboard${NC}"
     echo -e "${WHITE}  2)${LIGHT_GREEN} Add/Remove Wireguard Interface${NC}"
     echo -e "${WHITE}  3)${RED} Uninstall panel and core${NC}"
     echo -e "${WHITE}  4)${CYAN} Restart Wireguard-Panel / Tg-Bot / Wg-core${NC}" && echo
-    echo -e "${WHITE}  5)${YELLOW} IPV4/6 Forward${NC}" && echo
+    echo -e "${WHITE}  5)${YELLOW} IPV4/6 Forward${NC}"
+    echo -e "${WHITE}  0)${CYAN} View Detailed Wireguard Status${NC}" && echo
     echo -e "${WHITE}  q)${RED} Exit${NC}"
     echo -e "${CYAN}═════════════════════════════════════════════════════════════════════${NC}"
 }
@@ -179,7 +179,6 @@ display_menu() {
 
 select_stuff() {
     case $1 in
-        0) wireguard_detailed_stats ;;
         1) install_requirements 
             setup_virtualenv
             create_config
@@ -190,7 +189,8 @@ select_stuff() {
         3) uninstall_mnu ;;
         4) restart_services ;;
         5) sysctl_menu ;;
-        q) echo -e "${LIGHT_GREEN}Exiting...${NC}" && exit 0 ;;
+        0) wireguard_detailed_stats ;;
+        [qQ]) echo -e "${LIGHT_GREEN}Exiting...${NC}" && exit 0 ;;
         *) echo -e "${RED}Wrong choice. Please choose a valid option.${NC}" ;;
     esac
 }
@@ -202,6 +202,7 @@ restart_services() {
     echo -e "${WHITE}  2) ${YELLOW}Telegram Bot FA${NC}"
     echo -e "${WHITE}  3) ${YELLOW}Telegram Bot EN${NC}"
     echo -e "${WHITE}  4) ${YELLOW}Wireguard core${NC}"
+    echo -e "${WHITE}  0) ${RED}Back${NC}"
     echo -e "${CYAN}════════════════════════════════════════${NC}"
     read -p "Choose an option: " choice
 
@@ -229,29 +230,29 @@ restart_services() {
                 echo -e "${WARNING}No WireGuard interfaces found to restart.${NC}"
             fi
             ;;
+            
+        q) echo -e "${LIGHT_GREEN}Return...${NC}" && exit 0 ;;
         *)
             echo -e "${RED}Wrong choice. Returning to main menu.${NC}"
             ;;
     esac
 }
 
-
 uninstall_mnu() {
-    SCRIPT_DIR=$(dirname "$(realpath "$0")")
+SCRIPT_DIR=$(dirname "$(realpath "$0")")
 
-    echo -e '\033[93m══════════════════════════════════════════════════\033[0m'
-    echo -e "${CYAN}Uninstallation initiated${NC}"
-    echo -e '\033[93m══════════════════════════════════════════════════\033[0m'
+echo -e '\033[93m══════════════════════════════════════════════════\033[0m'
+echo -e "${CYAN}Uninstallation initiated${NC}"
+echo -e '\033[93m══════════════════════════════════════════════════\033[0m'
 
-    echo -e "${WARNING}[WARNING]:${NC} This will delete the Wireguard panel, its configs, and data ${YELLOW}[backups will be saved]."
-    echo -e "${YELLOW}──────────────────────────────────────────────────────────────────────${NC}"
-    echo -e "${CYAN}Do you want to continue? ${GREEN}[yes]${NC}/${RED}[no]${NC}: \c"
-    read -r CONFIRM
-    if [[ "$CONFIRM" != "yes" && "$CONFIRM" != "y" ]]; then
-        echo -e "${CYAN}Uninstallation aborted.${NC}"
-        return
-    fi
-
+echo -e "${WARNING}[WARNING]:${NC} This will delete the Wireguard panel, its configs, and data ${YELLOW}[backups will be saved]."
+echo -e "${YELLOW}──────────────────────────────────────────────────────────────────────${NC}"
+echo -e "${CYAN}Do you want to continue? ${GREEN}[y]${NC}/${RED}[n]${NC}: \c"
+read -r CONFIRM
+if [[ ! "$CONFIRM" =~ ^[yY](es)?$ ]]; then
+    echo -e "${CYAN}Uninstallation aborted.${NC}"
+    return
+fi
     BACKUP_DIR="$SCRIPT_DIR/uninstall_backups_$(date +%Y%m%d_%H%M%S)"
     WIREGUARD_DIR="/etc/wireguard"
     SYSTEMD_SERVICE="/etc/systemd/system/wireguard-panel.service"
@@ -349,52 +350,41 @@ uninstall_mnu() {
     echo -e "${CYAN}Press Enter to exit...${NC}" && read
 }
 
-
-
 install_requirements() {
     echo -e "\033[92m ^ ^\033[0m"
     echo -e "\033[92m(\033[91mO,O\033[92m)\033[0m"
     echo -e "\033[92m(   ) \033[92mRequirements\033[0m"
     echo -e '\033[92m "-"\033[93m══════════════════════════════════\033[0m'
 
-    echo -e "${INFO}[INFO]${YELLOW}Installing required Stuff...${NC}"
-    echo -e '\033[93m══════════════════════════════════\033[0m'
-
-    sudo apt update && sudo apt install -y python3 python3-pip python3-venv git redis nftables iptables wireguard-tools iproute2 \
-        fonts-dejavu certbot curl software-properties-common wget || {
-        echo -e "${ERROR}Installation failed. Ensure you are using root privileges.${NC}"
+    echo -e "${INFO}[INFO] Installing required packages...${NC}"
+    sudo apt update && sudo apt install -y python3 python3-pip python3-venv git redis nftables iptables wireguard-tools \
+        iproute2 fonts-dejavu certbot curl software-properties-common wget || {
+        echo -e "${ERROR}[ERROR] Installation failed. Ensure you are using root privileges.${NC}"
         exit 1
+    }
 
-    apt-get install systemd-resolved
-    systemctl start systemd-resolved
-    systemctl enable systemd-resolved
+    echo -e "${INFO}[INFO] Enabling and starting systemd-resolved...${NC}"
+    sudo systemctl enable --now systemd-resolved || {
+        echo -e "${ERROR}[ERROR] Failed to enable systemd-resolved.${NC}"
+        exit 1
+    }
 
     if ! command -v wg &>/dev/null; then
-        echo -e "${BLUE}[INFO] Wireguard not found. Installing...${NC}"
-        apt-get update -y && apt-get install -y wireguard
-        if [ $? -ne 0 ]; then
-            echo -e "${RED}[ERROR] Couldn't install Wireguard.${NC}"
-            return 1
-        fi
-        echo -e "${SUCCESS}[SUCCESS] Wireguard installed successfully!${NC}"
-    else
-        echo -e "${INFO}[INFO] Wireguard is already installed. Skipping...${NC}"
+        echo -e "${INFO}[INFO] Installing WireGuard...${NC}"
+        sudo apt-get install -y wireguard || {
+            echo -e "${ERROR}[ERROR] Failed to install WireGuard.${NC}"
+            exit 1
+        }
     fi
 
-    }
-
-    echo -e "${INFO}[INFO]${YELLOW}Starting Redis server...${NC}"
-    sudo systemctl enable redis-server.service
-    sudo systemctl start redis-server.service || {
-        echo -e "${ERROR}Couldn't start Redis server. Please check system logs.${NC}"
+    echo -e "${INFO}[INFO] Starting Redis server...${NC}"
+    sudo systemctl enable --now redis-server || {
+        echo -e "${ERROR}[ERROR] Couldn't start Redis server.${NC}"
         exit 1
     }
 
-    echo -e "${SUCCESS}[SUCCESS]All required stuff have been installed successfully.${NC}"
-    echo -e "${CYAN}Press Enter to continue...${NC}" && read
+    echo -e "${SUCCESS}[SUCCESS] All required packages installed successfully.${NC}"
 }
-
-
 setup_virtualenv() {
     echo -e "\033[92m ^ ^\033[0m"
     echo -e "\033[92m(\033[91mO,O\033[92m)\033[0m"
@@ -413,12 +403,6 @@ setup_virtualenv() {
     echo -e "${INFO}[INFO]${YELLOW}Creating virtual env...${NC}"
     "$PYTHON_BIN" -m venv "$SCRIPT_DIR/venv" || {
         echo -e "${ERROR}Couldn't create virtual env. Plz check Python installation and permissions.${NC}"
-        exit 1
-    }
-
-    echo -e "${INFO}[INFO]${YELLOW}Activating virtual env...${NC}"
-    source "$SCRIPT_DIR/venv/bin/activate" || {
-        echo -e "${ERROR}Couldn't activate virtual environment. Please check if the virtualenv module is installed.${NC}"
         exit 1
     }
 
@@ -478,62 +462,36 @@ setup_virtualenv() {
 
     echo -e "${SUCCESS}[SUCCESS]Virtual env set up successfully.${NC}"
     deactivate
-    echo -e "${CYAN}Press Enter to exit...${NC}" && read
 }
 
-
-
 setup_permissions() {
-    echo -e "\033[92m ^ ^\033[0m"
-    echo -e "\033[92m(\033[91mO,O\033[92m)\033[0m"
-    echo -e "\033[92m(   ) \033[92mRead & Write permissions\033[0m"
+    echo -e "\033[92m ^ ^\033[0m\n\033[92m(\033[91mO,O\033[92m)\033[0m\n\033[92m(   ) \033[92mRead & Write permissions\033[0m"
     echo -e '\033[92m "-"\033[93m══════════════════════════════════\033[0m'
     echo -e "${INFO}[INFO]${YELLOW}Setting permissions for files & directories...${NC}"
     echo -e '\033[93m══════════════════════════════════\033[0m'
 
-    CONFIG_FILE="$SCRIPT_DIR/config.yaml"
-    DB_DIR="$SCRIPT_DIR/db"
-    BACKUPS_DIR="$SCRIPT_DIR/backups"
-    TELEGRAM_DIR="$SCRIPT_DIR/telegram"
-    TELEGRAM_YAML="$TELEGRAM_DIR/telegram.yaml"
-    TELEGRAM_JSON="$TELEGRAM_DIR/config.json"
-    INSTALL_PROGRESS_JSON="$SCRIPT_DIR/install_progress.json"
-    API_JSON="$SCRIPT_DIR/api.json"
-    STATIC_FONTS_DIR="$SCRIPT_DIR/static/fonts"
+    # List of files and directories to set permissions
+    declare -A paths=(
+        ["$SCRIPT_DIR/config.yaml"]=644
+        ["$SCRIPT_DIR/db"]=600
+        ["$SCRIPT_DIR/backups"]=700
+        ["$TELEGRAM_DIR/telegram.yaml"]=644
+        ["$TELEGRAM_DIR/config.json"]=644
+        ["$SCRIPT_DIR/install_progress.json"]=644
+        ["$SCRIPT_DIR/api.json"]=644
+        ["$SCRIPT_DIR/setup.sh"]=744
+        ["$SCRIPT_DIR/install_telegram.sh"]=744
+        ["$SCRIPT_DIR/install_telegram-fa.sh"]=744
+        ["$SCRIPT_DIR/static/fonts"]=644
+    )
 
-    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $CONFIG_FILE...${NC}"
-    chmod 644 "$CONFIG_FILE" 2>/dev/null || echo -e "${WARNING}Warning: Couldn't set permissions for $CONFIG_FILE.${NC}"
+    # Loop through paths to set permissions
+    for path in "${!paths[@]}"; do
+        echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $path...${NC}"
+        chmod ${paths[$path]} "$path" 2>/dev/null || echo -e "${WARNING}Warning: Couldn't set permissions for $path.${NC}"
+    done
 
-    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $DB_DIR...${NC}"
-    chmod -R 600 "$DB_DIR" 2>/dev/null || echo -e "${WARNING}Warning: Couldn't set permissions for $DB_DIR.${NC}"
-
-    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $BACKUPS_DIR...${NC}"
-    chmod -R 700 "$BACKUPS_DIR" 2>/dev/null || echo -e "${WARNING}Warning: Couldn't set permissions for $BACKUPS_DIR.${NC}"
-
-    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $TELEGRAM_YAML...${NC}"
-    chmod 644 "$TELEGRAM_YAML" 2>/dev/null || echo -e "${WARNING}Warning: $TELEGRAM_YAML not found.${NC}"
-
-    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $TELEGRAM_JSON...${NC}"
-    chmod 644 "$TELEGRAM_JSON" 2>/dev/null || echo -e "${WARNING}Warning: $TELEGRAM_JSON not found.${NC}"
-
-    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $INSTALL_PROGRESS_JSON...${NC}"
-    chmod 644 "$INSTALL_PROGRESS_JSON" 2>/dev/null || echo -e "${WARNING}Warning: $INSTALL_PROGRESS_JSON not found.${NC}"
-
-    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $API_JSON...${NC}"
-    chmod 644 "$API_JSON" 2>/dev/null || echo -e "${WARNING}Warning: $API_JSON not found.${NC}"
-
-    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $SCRIPT_DIR/setup.sh...${NC}"
-    chmod 744 "$SCRIPT_DIR/setup.sh" 2>/dev/null || echo -e "${WARNING}Warning: setup.sh not found.${NC}"
-
-    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $SCRIPT_DIR/install_telegram.sh...${NC}"
-    chmod 744 "$SCRIPT_DIR/install_telegram.sh" 2>/dev/null || echo -e "${WARNING}Warning: install_telegram.sh not found.${NC}"
-
-    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $SCRIPT_DIR/install_telegram-fa.sh...${NC}"
-    chmod 744 "$SCRIPT_DIR/install_telegram-fa.sh" 2>/dev/null || echo -e "${WARNING}Warning: install_telegram-fa.sh not found.${NC}"
-
-    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $STATIC_FONTS_DIR...${NC}"
-    chmod -R 644 "$STATIC_FONTS_DIR" 2>/dev/null || echo -e "${WARNING}Warning: $STATIC_FONTS_DIR not found.${NC}"
-
+    # Check and set permissions for /etc/wireguard if it exists
     if [ -d "/etc/wireguard" ]; then
         echo -e "${INFO}[INFO]${YELLOW}Setting permissions for /etc/wireguard...${NC}"
         sudo chmod -R 755 /etc/wireguard || echo -e "${ERROR}Couldn't set permissions for /etc/wireguard. use sudo -i.${NC}"
@@ -541,15 +499,13 @@ setup_permissions() {
         echo -e "${WARNING}/etc/wireguard directory does not exist.${NC}"
     fi
 
+    # Set permissions for all other files and directories
     echo -e "${INFO}[INFO]${YELLOW}Checking permissions for other directories...${NC}"
-
     find "$SCRIPT_DIR" -type f ! -path "$SCRIPT_DIR/venv/*" -exec chmod 644 {} \; || echo -e "${WARNING}Could not update file permissions in $SCRIPT_DIR.${NC}"
     find "$SCRIPT_DIR" -type d -exec chmod 755 {} \; || echo -e "${WARNING}Could not update directory permissions in $SCRIPT_DIR.${NC}"
 
     echo -e "${SUCCESS}[SUCCESS]Permissions have been set successfully.${NC}"
 }
-
-
 
 setup_tls() {
     echo -e '\033[93m══════════════════════════════════\033[0m'
@@ -557,38 +513,37 @@ setup_tls() {
 
     while true; do
         read -e ENABLE_TLS
-        ENABLE_TLS=$(echo "$ENABLE_TLS" | tr '[:upper:]' '[:lower:]')  
-        
+        ENABLE_TLS=$(echo "$ENABLE_TLS" | tr '[:upper:]' '[:lower:]')
+
         if [[ "$ENABLE_TLS" == "yes" || "$ENABLE_TLS" == "no" ]]; then
-            echo -e "${INFO}[INFO] TLS enabled: ${GREEN}$ENABLE_TLS${NC}" 
+            echo -e "${INFO}[INFO] TLS enabled: ${GREEN}$ENABLE_TLS${NC}"
             break
-        else
-            echo -e "${RED}Wrong input. Please type ${GREEN}yes${RED} or ${RED}no${NC}: \c"
         fi
+        echo -e "${RED}Wrong input. Please type ${GREEN}yes${RED} or ${RED}no${NC}: \c"
     done
 
-    if [ "$ENABLE_TLS" = "yes" ]; then
-        while true; do
-            echo -e "${YELLOW}Enter your ${GREEN}Sub-domain name${YELLOW}:${NC} \c"
-            read -e DOMAIN_NAME
-            if [ -n "$DOMAIN_NAME" ]; then
-                echo -e "${INFO}[INFO] Sub-domain set to: ${GREEN}$DOMAIN_NAME${NC}" 
-                break
-            else
-                echo -e "${RED}Sub-domain name cannot be empty. Please try again.${NC}"
-            fi
-        done
+    if [ "$ENABLE_TLS" == "yes" ]; then
+        # Function to get user input with validation
+        get_input() {
+            local prompt="$1"
+            local regex="$2"
+            local error_msg="$3"
+            local result
+            while true; do
+                echo -e "$prompt"
+                read -e result
+                if [[ "$result" =~ $regex ]]; then
+                    echo -e "${INFO}[INFO] $error_msg: ${GREEN}$result${NC}"
+                    echo "$result"
+                    break
+                fi
+                echo -e "${RED}$error_msg${NC}"
+            done
+        }
 
-        while true; do
-            echo -e "${YELLOW}Enter your ${GREEN}Email address${YELLOW}:${NC} \c"
-            read -e EMAIL
-            if [[ "$EMAIL" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
-                echo -e "${INFO}[INFO] Email set to: ${GREEN}$EMAIL${NC}" 
-                break
-            else
-                echo -e "${RED}Wrong email address. Please enter a valid email.${NC}"
-            fi
-        done
+        # Get domain name and email with validation
+        DOMAIN_NAME=$(get_input "${YELLOW}Enter your ${GREEN}Sub-domain name${YELLOW}:${NC}" "^.+$" "Sub-domain set to")
+        EMAIL=$(get_input "${YELLOW}Enter your ${GREEN}Email address${YELLOW}:${NC}" "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" "Email set to")
 
         echo -e "${INFO}[INFO]${YELLOW} Requesting a TLS certificate from Let's Encrypt...${NC}"
 
@@ -600,6 +555,7 @@ setup_tls() {
 
             CONFIG_FILE="$SCRIPT_DIR/config.yaml"
 
+            # Create config.yaml if it doesn't exist
             if [ ! -f "$CONFIG_FILE" ]; then
                 echo -e "${INFO}[INFO]${YELLOW} config.yaml does not exist. Creating it...${NC}"
                 cat <<EOF > "$CONFIG_FILE"
@@ -622,7 +578,6 @@ EOF
         echo -e "${CYAN}[INFO] Skipping TLS setup.${NC}"
     fi
 }
-
 
 show_flask_info() {
     echo -e "\033[92m ^ ^\033[0m"
@@ -653,7 +608,6 @@ show_flask_info() {
         echo -e "${CYAN}You can use this IP to access the app directly.${NC}"
         echo -e "\033[93m══════════════════════════════════\033[0m"
     fi
-
 }
 
 wireguardconf() {
@@ -888,10 +842,10 @@ EOL
 }
 
 wireguardconf_menu() {
-    echo -e '\033[93m══════════════════════════════════════════════════\033[0m'
+    echo -e "\033[93m══════════════════════════════════════════════════\033[0m"
 
-    echo -e "${YELLOW}1) Add Interface\n2) Remove Interface${NC}"
-    echo -e "${YELLOW}Choose an option:${NC} \c"
+    echo -e "1) ${YELLOW}Add Interface${NC}\n2) ${YELLOW}Remove Interface${NC}"
+    echo -ne "Choose an option [1-2]: \c"
     read -r OPTION
 
     if [ "$OPTION" = "1" ]; then
@@ -900,12 +854,12 @@ wireguardconf_menu() {
             read -e WG_NAME
 
             if [ -z "$WG_NAME" ]; then
-                echo -e "${RED}Interface name cannot be empty. Please try again.${NC}"
+                echo -e "${RED}[ERROR] Interface name cannot be empty. Please try again.${NC}"
                 continue
             fi
 
             if ip link show "$WG_NAME" >/dev/null 2>&1; then
-                echo -e "${RED}Interface $WG_NAME already exists. Please enter another name.${NC}"
+                echo -e "${RED} [ERROR] Interface $WG_NAME already exists. Please enter another name.${NC}"
             else
                 echo -e "${INFO}[INFO] Interface Name set to: ${GREEN}$WG_NAME${NC}"
                 break
@@ -1038,8 +992,6 @@ EOL
     echo -e "${CYAN}Press Enter to continue...${NC}"
     read -r
 }
-
-
 SYSCTL_CONF="/etc/sysctl.conf"
 BACKUP_CONF="/etc/sysctl.conf.backup"
 
@@ -1052,10 +1004,14 @@ declare -A SETTINGS=(
 
 backup_sysctl() {
     if [ ! -f "$BACKUP_CONF" ]; then
-        sudo cp "$SYSCTL_CONF" "$BACKUP_CONF"
-        echo -e "\033[93mBackup created at $BACKUP_CONF\033[0m"
+        if [ -f "$SYSCTL_CONF" ]; then
+            sudo cp "$SYSCTL_CONF" "$BACKUP_CONF"
+            echo -e "$(date +'%Y-%m-%d %H:%M:%S') \033[93mBackup created at $BACKUP_CONF\033[0m"
+        else
+            echo -e "$(date +'%Y-%m-%d %H:%M:%S') \033[91mError: $SYSCTL_CONF not found\033[0m"
+        fi
     else
-        echo -e "\033[92mBackup already exists at $BACKUP_CONF\033[0m"
+        echo -e "$(date +'%Y-%m-%d %H:%M:%S') \033[92mBackup already exists at $BACKUP_CONF\033[0m"
     fi
 }
 
@@ -1063,21 +1019,26 @@ apply() {
     local current_settings
     declare -A current_settings
 
+    # Read current settings from sysctl.conf
     while IFS='=' read -r key value; do
-        if [[ "$key" =~ ^# ]] || [[ -z "$key" ]]; then
-            continue
+        key=$(echo "$key" | xargs)
+        value=$(echo "$value" | xargs)
+        if [[ "$key" != \#* && -n "$key" ]]; then
+            current_settings["$key"]="$value"
         fi
-        current_settings["$key"]=$(echo "$value" | xargs)  
     done < "$SYSCTL_CONF"
 
     for key in "${!SETTINGS[@]}"; do
         value="${SETTINGS[$key]}"
         if [[ "${current_settings[$key]}" != "$value" ]]; then
-            echo "$key = $value" | sudo tee -a "$SYSCTL_CONF" > /dev/null
+            # Ensure the key is not duplicated in sysctl.conf
+            if ! grep -q "^$key" "$SYSCTL_CONF"; then
+                echo "$key = $value" | sudo tee -a "$SYSCTL_CONF" > /dev/null
+            fi
             sudo sysctl -w "$key=$value"
-            echo -e "\033[92mApplied \033[94m$key \033[93m= \033[94m$value\033[0m"
+            echo -e "$(date +'%Y-%m-%d %H:%M:%S') \033[92mApplied \033[94m$key \033[93m= \033[94m$value\033[0m"
         else
-            echo -e "\033[94m$key\033[93m is already set to $value\033[0m"
+            echo -e "$(date +'%Y-%m-%d %H:%M:%S') \033[94m$key\033[93m is already set to $value\033[0m"
         fi
     done
 }
@@ -1086,9 +1047,9 @@ restore_backup() {
     if [ -f "$BACKUP_CONF" ]; then
         sudo cp "$BACKUP_CONF" "$SYSCTL_CONF"
         sudo sysctl -p
-        echo -e "\033[93mRestored configuration from $BACKUP_CONF\033[0m"
+        echo -e "$(date +'%Y-%m-%d %H:%M:%S') \033[93mRestored configuration from $BACKUP_CONF\033[0m"
     else
-        echo -e "\033[91mNo backup found at $BACKUP_CONF\033[0m"
+        echo -e "$(date +'%Y-%m-%d %H:%M:%S') \033[91mError: No backup found at $BACKUP_CONF\033[0m"
     fi
 }
 
@@ -1115,15 +1076,15 @@ sysctl_menu() {
             restore_backup
             ;;
         *)
-            echo -e "\033[91mWrong choice. Exiting.\033[0m"
+            echo -e "$(date +'%Y-%m-%d %H:%M:%S') \033[91mWrong choice. Exiting.\033[0m"
             ;;
     esac
 }
 
-
+# Main menu loop
 while true; do
-    display_menu
-    echo -e "${NC}choose an option [1-9]:${NC} \c"
+    sysctl_menu
+    echo -e "${NC}choose an option [1-3]:${NC} \c"
     read -r USER_CHOICE
     select_stuff "$USER_CHOICE"
 done
