@@ -173,7 +173,7 @@ display_menu() {
     echo -e "${WHITE}  q)${RED} Exit${NC}"
     echo -e "${CYAN}═════════════════════════════════════════════════════════════════════${NC}"
 }
-display_menu
+
 select_stuff() {
     case $1 in
         1) install_requirements
@@ -1048,5 +1048,4 @@ EOL
     echo -e "${CYAN}Press Enter to continue...${NC}"
     read -r
 }
-
-
+display_menu
