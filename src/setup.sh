@@ -57,6 +57,7 @@ wireguard_detailed_stats() {
 
 
 display_menu() {
+    clear
     display_logo
     echo -e "${CYAN}╔═════════════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${CYAN}║      ${YELLOW}███████████████${NC}        ${BLUE}Main Menu${NC}        ${YELLOW}███████████████ ${CYAN}       ║${NC}"
