@@ -385,6 +385,7 @@ install_requirements() {
 
     echo -e "${SUCCESS}[SUCCESS] All required packages installed successfully.${NC}"
 }
+
 setup_virtualenv() {
     echo -e "\033[92m ^ ^\033[0m"
     echo -e "\033[92m(\033[91mO,O\033[92m)\033[0m"
@@ -394,25 +395,32 @@ setup_virtualenv() {
 
     PYTHON_BIN=$(which python3)
     if [ -z "$PYTHON_BIN" ]; then
-        echo -e "${ERROR}Python3 is not installed or not in PATH. install Python3.${NC}"
+        echo -e "${ERROR}Python3 is not installed or not in PATH. Please install Python3.${NC}"
         exit 1
     fi
 
     echo -e "${INFO}[INFO]${YELLOW}Using Python binary: $PYTHON_BIN${NC}"
 
-    echo -e "${INFO}[INFO]${YELLOW}Creating virtual env...${NC}"
+    echo -e "${INFO}[INFO]${YELLOW}Creating virtual environment...${NC}"
     "$PYTHON_BIN" -m venv "$SCRIPT_DIR/venv" || {
-        echo -e "${ERROR}Couldn't create virtual env. Plz check Python installation and permissions.${NC}"
+        echo -e "${ERROR}Failed to create virtual environment. Please check Python installation and permissions.${NC}"
         exit 1
     }
 
-    echo -e "${INFO}[INFO]${YELLOW}Upgrading pip and installing stuff...${NC}"
+    echo -e "${INFO}[INFO]${YELLOW}Activating virtual environment...${NC}"
+    source "$SCRIPT_DIR/venv/bin/activate" || {
+        echo -e "${ERROR}Failed to activate virtual environment. Ensure the 'virtualenv' module is installed.${NC}"
+        exit 1
+    }
+
+    echo -e "${INFO}[INFO]${YELLOW}Upgrading pip...${NC}"
     pip install --upgrade pip || {
-        echo -e "${ERROR}Couldn't upgrade pip. Change DNS.${NC}"
+        echo -e "${ERROR}Failed to upgrade pip. Check your DNS or network connection.${NC}"
         deactivate
         exit 1
     }
 
+    echo -e "${INFO}[INFO]${YELLOW}Installing required packages...${NC}"
     pip install \
         python-dotenv \
         python-telegram-bot \
@@ -442,26 +450,27 @@ setup_virtualenv() {
         Pillow \
         arabic-reshaper \
         python-bidi || {
-            echo -e "${ERROR}Couldn't install Python requirements. check the error messages and try again.${NC}"
+            echo -e "${ERROR}Failed to install Python packages. Check the error messages and try again.${NC}"
             deactivate
             exit 1
         }
 
-    echo -e "${INFO}[INFO]${YELLOW}Installing stuff...${NC}"
+    echo -e "${INFO}[INFO]${YELLOW}Installing system dependencies...${NC}"
     sudo apt-get update || {
-        echo -e "${ERROR}Couldn't update package list. Please check your DNS or network connection.${NC}"
+        echo -e "${ERROR}Failed to update package list. Check your DNS or network connection.${NC}"
         deactivate
         exit 1
     }
 
     sudo apt-get install -y libsystemd-dev || {
-        echo -e "${ERROR}Couldn't install libsystemd-dev. Check your package manager or system settings.${NC}"
+        echo -e "${ERROR}Failed to install libsystemd-dev. Check your package manager or system settings.${NC}"
         deactivate
         exit 1
     }
 
-    echo -e "${SUCCESS}[SUCCESS]Virtual env set up successfully.${NC}"
+    echo -e "${SUCCESS}[SUCCESS]Virtual environment set up successfully.${NC}"
     deactivate
+    echo -e "${CYAN}Press Enter to exit...${NC}" && read
 }
 
 setup_permissions() {
