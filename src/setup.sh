@@ -887,7 +887,7 @@ EOL
 
 }
 
-wireguardconf() {
+wireguardconf_menu() {
     echo -e '\033[93m══════════════════════════════════════════════════\033[0m'
 
     echo -e "${YELLOW}1) Add Interface\n2) Remove Interface${NC}"
