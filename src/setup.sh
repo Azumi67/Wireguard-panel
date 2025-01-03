@@ -14,6 +14,43 @@ WARNING="\e[33m"
 ERROR="\e[31m"      
 RED="\e[31m"        
 
+logo=$(cat << "EOF"
+\033[1;96m          
+
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⢨⠀⠀⠀⢀⠤⠂⠁\033[1;96m⢠⣾⡟⣧⠿⣝⣮⣽⢺⣝⣳⡽⣎⢷⣫⡟⡵⡿⣵⢫⡷⣾⢷⣭⢻⣦⡄\033[1;93m⠤⡸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠘⡄⠀⠀⠓⠂⠀\033[1;96m⣴⣿⢷⡿⣝⣻⣏⡷⣾⣟⡼⣣⢟⣼⣣⢟⣯⢗⣻⣽⣏⡾⡽⣟⣧⠿⡼⣿⣦\033[1;93m⣃⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⢀⠇⠀⠀⠀⠀\033[1;96m⣼⣿⢿⣼⡻⣼⡟⣼⣧⢿⣿⣸⡧⠿⠃⢿⣜⣻⢿⣤⣛⣿⢧⣻⢻⢿⡿⢧⣛⣿⣧⠀\033[1;93m⠛⠤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠀⢸⠁⠀⠀⠀⠀\033[1;96m⣼⣻⡿⣾⣳⡽⣾⣽⡷⣻⣞⢿⣫⠕⣫⣫⣸⢮⣝⡇⠱⣏⣾⣻⡽⣻⣮⣿⣻⡜⣞⡿⣷\033[1;93m⢀⠀⠀⠑⠢⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠘⣧⠀⠀⠀\033[1;96m⣼⣳⢯⣿⣗⣿⣏⣿⠆⣟⣿⣵⢛⣵⡿⣿⣏⣟⡾⣜⣻⠀⢻⡖⣷⢳⣏⡶⣻⡧⣟⡼⣻⡽⣇\033[1;93m⠁⠢⡀⠠⡀⠑⡄⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠀⠈⢦⠀\033[1;96m⣰⣯⣟⢯⣿⢾⣹⢾⡟⠰⣏⡾⣾⣟⡷⣿⣻⣽⣷⡶⣟⠿⡆⠀⢻⣝⣯⢷⣹⢧⣿⢧⡻⣽⣳⢽⡀\033[1;93m⠀⠈⠀⠈⠂⡼⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠀⠀⡀⢵\033[1;96m⣟⣾⡟⣾⣿⣻⢽⣺⠇⠀⣿⡱⢿⡞⣵⡳⣭⣿⡜⣿⣭⣻⣷⠲⠤⢿⣾⢯⢯⣛⢿⣳⡝⣾⣿⢭⡇⠀\033[1;93m⠀⠀⠀⡰⠁⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⢀⠤⠊⠀\033[1;96m⣼⢻⣿⢞⣯⢿⡽⣸⣹⡆⠀⢷⣏⢯⣿⣧⣛⠶⣯⢿⣽⣷⣧⣛⣦⠀⠀⠙⢿⣳⣽⣿⣣⢟⡶⣿⣫⡇⠀⠀\033[1;93m⠀⠰⠁⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⣠⠖⠁⠀⠀⡄\033[1;96m⡿⣯⣷⣻⡽⣞⡟⣿⣿⣟⠉⠈⢯⣗⣻⣕⢯⣛⡞⣯⢮⣷⣭⡚⠓⠋⠀⠀⠀⠈⠉⣿⡽⣎⠷⡏⡷⣷⠀⠀⠀\033[1;93m⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠐⣇⠀⠀⢀⠊\033[1;96m⣼⣇⣿⡗⣿⣽⣷⡿⣿⣱⡿⣆⠀⠀⠙⠒⠛⠓⠋⠉⠉⠀⠀⠀\033[1;91m⢠⣴⣯⣶⣶⣤⡀\033[1;96m ⠀⣿⣟⡼⣛⡇⣟⣿⡆\033[1;93m⡀⠀⢀⠇⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠀⠘⢤⠀⠃⠌\033[1;96m⣸⣿⢾⡽⣹⣾⠹⣞⡵⣳⣽⡽⣖⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\033[1;91m⣤⣖⣻⣾⣝⢿⡄\033[1;96m ⢸⣯⢳⣏⡿⣏⣾⢧\033[1;93m⠈⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠀⠘⠀⠈⠀\033[1;96m⡿⣿⣻⡽⣽⣿⢧⠌⠉\033[1;91m⠉⣴⣿⣿⣫⣅⡀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣛⠿⠿⢟⢙⡄⠙\033[1;96m ⠘⣯⢳⣞⡟⣯⢾⣻⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠀⡇⠀⠀⠀\033[1;96m⡿⣿⣿⢵⣫⣿⣆⠁⠂\033[1;91m⣼⡿⢹⣿⡿⠽⠟⢢⠀⠀⠀⠀⠀⠀⠀⢹⠀⢄⢀⠀⡿⠀⠀\033[1;96m ⢰⣯⢷⣺⣏⣯⢻⡽⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠀⡇⠀⢀⠠\033[1;96m⣿⣿⢾⣛⡶⣽⠈⢓⠀\033[1;91m⢻⠁⢸⠇⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠑⠠⠤⠔⠂⠀⠀\033[1;96m ⢸⣿⢮⣽⠿⣜⣻⡝⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀\033[1;93m⠀⠑⠊⠁\033[1;96m⢠⡷⡇⣿⣿⢼⣹⡀⠀⠑⢄⠀\033[1;91m⠀⠃⠌⣁⠦⠟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠂⠀⠀\033[1;96m⢀⣿⢾⡝⣾⡽⣺⢽⣹⣽⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣻⢽⣻⡟⣮⣝⡷⢦⣄⣄⣢⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣾⣯⢿⡺⣟⢷⡹⢾⣷⡞⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣟⡿⣎⢿⡽⣳⢮⣿⣹⣾⣯⡝⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠃⠀⠀⠀⠀⠀⠀⣀⣴⡟⣿⢧⣏⢷⡟⣮⠝⢿⣹⣯⡽⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣯⡷⣏⣾⡳⣽⢺⣷⡹⣟⢶⡹⣾⡽⣷⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠔⣾⢯⣷⡇⣿⢳⣎⢿⡞⣽⢦⣼⡽⣧⢻⡽⣆⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣟⢾⡷⣭⣿⢳⣭⢻⣷⡻⣜⣻⡵⣻⡼⣿⠾⠫\033[1;96m⣽⣟⣶⣶⣶⠒⠒⠂⠉⠀\033[1;96m⢸⣽⢺⡷⣷⣯⢗⣮⣟⢾⢧⣻⠼⡿⣿⢣⡟⣼⣆⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡾⣝⣾⢳⢧⣟⡳⣎⣿⣿⣱⢏⣾⣽⣳⠟\033[1;92m⠁⠀⡌⠈\033[1;96m⢹⡯⠟⠛⠀⠀⠀⠀⠀⠈\033[1;96m⣷⢻⣼⣽⣿⡾⣼⣏⣾⣻⡜⣯⣷⢿⣟⣼⡳⣞⣦⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⢀⣾⢿⡸⣎⠿⣾⡏⣷⣉⣷⣿⢹⣎⡿\033[1;92m⠎⡎⠀⠀⠀⡇⠀⣾⠱⡀⠀⠀⠀⠀⠀⠀⠀⠈⣹⠉⡏⠀\033[1;96m⠹⣾⣏⢹⣶⢹⣶⢿⡾⣿⢶⣿⣸⠾⣇⠀⠀⠀⠀⠀
+           \033[96m __    \033[1;94m  ________  \033[1;92m ____  ____ \033[1;93m ___      ___  \033[1;91m __     
+      \033[96m     /""\   \033[1;94m ("      "\ \033[1;92m("  _||_ " |\033[1;93m|"  \    /"  | \033[1;91m|" \    
+      \033[96m    /    \   \033[1;94m \___/   :)\033[1;92m|   (  ) : |\033[1;93m \   \  //   | \033[1;91m||  |   
+      \033[96m   /' /\  \   \033[1;94m  /  ___/ \033[1;92m(:  |  | . )\033[1;93m /\   \/.    |\033[1;91m |:  |   
+     \033[96m   //  __'  \  \033[1;94m //  \__  \033[1;92m \  \__/  / \033[1;93m|: \.        | \033[1;91m|.  |   
+      \033[96m  /  /  \   \ \033[1;94m(:   / "\ \033[1;92m /\  __  /\ \033[1;93m|.  \    /:  |\033[1;91m /\  |\ 
+      \033[96m(___/    \___) \033[1;94m\_______)\033[1;92m(__________)\033[1;93m|___|\__/|___|\033[1;91m(__\_|_) \033[1;92mAuthor: github.com/Azumi67  \033[0m         
+EOF
+)
+display_logo() {
+    echo -e "$logo"
+}
+
 wireguard_detailed_stats() {
     echo -e "${CYAN}Wireguard Detailed Status:${NC}"
     echo -e "${YELLOW}═════════════════════════════════════════════════════════════════════${NC}"
@@ -149,7 +186,7 @@ select_stuff() {
             wireguardconf
             setup_permissions
             wireguard_panel;;
-        2) wireguardconf ;;
+        2) wireguardconf_menu ;;
         3) uninstall_mnu ;;
         4) restart_services ;;
         5) sysctl_menu ;;
@@ -183,7 +220,14 @@ restart_services() {
             ;;
         4)
             echo -e "${CYAN}Restarting wireguard core...${NC}"
-            systemctl restart wireguard.service
+            
+            if ls /etc/wireguard/*.conf >/dev/null 2>&1; then
+                for iface in $(ls /etc/wireguard/*.conf | xargs -n1 basename | sed 's/\.conf//'); do
+                    sudo wg-quick restart "$iface" && echo -e "${SUCCESS}[SUCCESS]Interface $iface restarted.${NC}" || echo -e "${ERROR}Couldn't restart interface $iface.${NC}"
+                done
+            else
+                echo -e "${WARNING}No WireGuard interfaces found to restart.${NC}"
+            fi
             ;;
         *)
             echo -e "${RED}Wrong choice. Returning to main menu.${NC}"
@@ -320,6 +364,23 @@ install_requirements() {
         fonts-dejavu certbot curl software-properties-common wget || {
         echo -e "${ERROR}Installation failed. Ensure you are using root privileges.${NC}"
         exit 1
+
+    apt-get install systemd-resolved
+    systemctl start systemd-resolved
+    systemctl enable systemd-resolved
+
+    if ! command -v wg &>/dev/null; then
+        echo -e "${BLUE}[INFO] Wireguard not found. Installing...${NC}"
+        apt-get update -y && apt-get install -y wireguard
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}[ERROR] Couldn't install Wireguard.${NC}"
+            return 1
+        fi
+        echo -e "${SUCCESS}[SUCCESS] Wireguard installed successfully!${NC}"
+    else
+        echo -e "${INFO}[INFO] Wireguard is already installed. Skipping...${NC}"
+    fi
+
     }
 
     echo -e "${INFO}[INFO]${YELLOW}Starting Redis server...${NC}"
@@ -486,7 +547,6 @@ setup_permissions() {
     find "$SCRIPT_DIR" -type d -exec chmod 755 {} \; || echo -e "${WARNING}Could not update directory permissions in $SCRIPT_DIR.${NC}"
 
     echo -e "${SUCCESS}[SUCCESS]Permissions have been set successfully.${NC}"
-    echo -e "${CYAN}Press Enter to continue...${NC}" && read
 }
 
 
@@ -597,20 +657,6 @@ show_flask_info() {
 }
 
 wireguardconf() {
-    echo -e "\n${BLUE}[INFO]=== Wireguard Installation and Configuration ===${NC}\n"
-
-    if ! command -v wg &>/dev/null; then
-        echo -e "${BLUE}[INFO] Wireguard not found. Installing...${NC}"
-        apt-get update -y && apt-get install -y wireguard
-        if [ $? -ne 0 ]; then
-            echo -e "${RED}[ERROR] Couldn't install Wireguard.${NC}"
-            return 1
-        fi
-        echo -e "${SUCCESS}[SUCCESS] Wireguard installed successfully!${NC}"
-    else
-        echo -e "${INFO}[INFO] Wireguard is already installed. Skipping...${NC}"
-    fi
-
     echo -e '\033[93m══════════════════════════════════════════════════\033[0m'
 
     while true; do
@@ -719,11 +765,7 @@ EOL
 
     echo -e "\n${GREEN}Wireguard interface ${WG_NAME} created & activated successfully!${NC}"
 
-    echo -e "${CYAN}Press Enter to continue...${NC}"
-    read -r
 }
-
-
 
 create_config() {
     echo -e "\033[92m ^ ^\033[0m"
@@ -843,7 +885,6 @@ EOL
         echo -e "${RED}[ERROR] Couldn't create config.yaml. Please check for errors.${NC}"
     fi
 
-    echo -e "${CYAN}Press Enter to continue...${NC}" && read
 }
 
 
@@ -908,6 +949,158 @@ EOL
     echo -e "${CYAN}Press Enter to continue...${NC}" && read
 }
 
+wireguardconf_menu() {
+    echo -e '\033[93m══════════════════════════════════════════════════\033[0m'
+
+    echo -e "${YELLOW}WireGuard Configuration Menu:${NC}"
+    echo -e "1. Add a WireGuard Interface"
+    echo -e "2. Remove a WireGuard Interface"
+    echo -e "3. Exit"
+
+    while true; do
+        echo -e "${YELLOW}Choose an option:${NC} \c"
+        read -e OPTION
+        case $OPTION in
+            1)
+                while true; do
+                    echo -e "${YELLOW}Enter the ${BLUE}Wireguard ${GREEN}interface name${NC} (example wg0):${NC} \c"
+                    read -e WG_NAME
+                    if [ -n "$WG_NAME" ]; then
+                        echo -e "${INFO}[INFO] Interface Name set to: ${GREEN}$WG_NAME${NC}"
+                        break
+                    else
+                        echo -e "${RED}Interface name cannot be empty. Please try again.${NC}"
+                    fi
+                done
+
+                local WG_CONFIG="/etc/wireguard/${WG_NAME}.conf"
+                local PRIVATE_KEY
+                PRIVATE_KEY=$(wg genkey)
+
+                local SERVER_INTERFACE
+                SERVER_INTERFACE=$(ip route | grep default | awk '{print $5}' | head -n1)
+                [ -z "${SERVER_INTERFACE}" ] && SERVER_INTERFACE="eth0"
+
+                while true; do
+                    echo -e "${YELLOW}Enter the ${BLUE}Wireguard ${GREEN}private IP address${NC} (example 176.66.66.1/24):${NC} \c"
+                    read -e WG_ADDRESS
+                    if [[ "$WG_ADDRESS" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/[0-9]+$ ]]; then
+                        echo -e "${INFO}[INFO] Private IP Address set to: ${GREEN}$WG_ADDRESS${NC}"
+                        break
+                    else
+                        echo -e "${RED}Wrong IP address format. Please try again.${NC}"
+                    fi
+                done
+
+                while true; do
+                    echo -e "${YELLOW}Enter the ${BLUE}Wireguard ${GREEN}listen port${NC} (example 20820):${NC} \c"
+                    read -e WG_PORT
+                    if [[ "$WG_PORT" =~ ^[0-9]+$ ]] && [ "$WG_PORT" -ge 1 ] && [ "$WG_PORT" -le 65535 ]; then
+                        echo -e "${INFO}[INFO] Listen Port set to: ${GREEN}$WG_PORT${NC}"
+                        break
+                    else
+                        echo -e "${RED}Wrong port number. Please enter a valid port between 1 and 65535.${NC}"
+                    fi
+                done
+
+                while true; do
+                    echo -e "${YELLOW}Enter the ${BLUE}MTU ${GREEN}size${NC} (example 1420):${NC} \c"
+                    read -e MTU
+                    if [[ "$MTU" =~ ^[0-9]+$ ]]; then
+                        echo -e "${INFO}[INFO] MTU Size set to: ${GREEN}$MTU${NC}"
+                        break
+                    else
+                        echo -e "${RED}Wrong MTU size. Please try again.${NC}"
+                    fi
+                done
+
+                while true; do
+                    echo -e "${YELLOW}Enter the ${BLUE}DNS ${GREEN}servers ${NC}(example 1.1.1.1):${NC} \c"
+                    read -e DNS
+                    if [ -n "$DNS" ]; then
+                        echo -e "${INFO}[INFO] DNS Servers set to: ${GREEN}$DNS${NC}"
+                        break
+                    else
+                        echo -e "${RED}DNS servers cannot be empty. Please try again.${NC}"
+                    fi
+                done
+
+                echo -e '\033[93m══════════════════════════════════════════════════\033[0m'
+
+                if [ ! -d "/etc/wireguard" ]; then
+                    echo -e "${INFO}[INFO] Creating /etc/wireguard directory...${NC}"
+                    sudo mkdir -p /etc/wireguard
+                fi
+
+                echo -e "${INFO}[INFO] Generating Wireguard config at ${WG_CONFIG}...${NC}"
+                cat <<EOL > "${WG_CONFIG}"
+[Interface]
+Address = ${WG_ADDRESS}
+ListenPort = ${WG_PORT}
+PrivateKey = ${PRIVATE_KEY}
+MTU = ${MTU}
+DNS = ${DNS}
+
+PostUp = iptables -I INPUT -p udp --dport ${WG_PORT} -j ACCEPT
+PostUp = iptables -I FORWARD -i ${SERVER_INTERFACE} -o ${WG_NAME} -j ACCEPT
+PostUp = iptables -I FORWARD -i ${WG_NAME} -j ACCEPT
+PostUp = iptables -t nat -A POSTROUTING -o ${SERVER_INTERFACE} -j MASQUERADE
+
+PostDown = iptables -D INPUT -p udp --dport ${WG_PORT} -j ACCEPT
+PostDown = iptables -D FORWARD -i ${SERVER_INTERFACE} -o ${WG_NAME} -j ACCEPT
+PostDown = iptables -D FORWARD -i ${WG_NAME} -j ACCEPT
+PostDown = iptables -t nat -D POSTROUTING -o ${SERVER_INTERFACE} -j MASQUERADE
+EOL
+
+                chmod 600 "${WG_CONFIG}" || { echo -e "${RED}[ERROR] Couldn't set permissions on ${WG_CONFIG}.${NC}"; return 1; }
+
+                echo -e "${INFO}[INFO] Bringing up Wireguard interface ${WG_NAME}...${NC}"
+                if ! wg-quick up "${WG_NAME}"; then
+                    echo -e "${RED}[ERROR] Couldn't bring up ${WG_NAME}. Check config or logs.${NC}"
+                    return 1
+                fi
+
+                echo -e "${INFO}[INFO] Enabling Wireguard interface ${WG_NAME}${NC}"
+                if ! systemctl enable "wg-quick@${WG_NAME}"; then
+                    echo -e "${RED}[ERROR] Couldn't enable wg-quick@${WG_NAME} on boot.${NC}"
+                    return 1
+                fi
+
+                echo -e "\n${GREEN}Wireguard interface ${WG_NAME} created & activated successfully!${NC}"
+                ;;
+
+            2)
+                echo -e "${YELLOW}Available WireGuard interfaces:${NC}"
+                ls /etc/wireguard/*.conf 2>/dev/null | awk -F'/' '{print $NF}' | sed 's/\.conf$//'
+
+                echo -e "${YELLOW}Enter the name of the interface to remove:${NC} \c"
+                read -e REMOVE_IFACE
+
+                if [ -f "/etc/wireguard/${REMOVE_IFACE}.conf" ]; then
+                    echo -e "${INFO}[INFO] Stopping and disabling ${REMOVE_IFACE}...${NC}"
+                    wg-quick down "${REMOVE_IFACE}" 2>/dev/null
+                    systemctl disable "wg-quick@${REMOVE_IFACE}" 2>/dev/null
+
+                    echo -e "${INFO}[INFO] Removing configuration file for ${REMOVE_IFACE}...${NC}"
+                    rm -f "/etc/wireguard/${REMOVE_IFACE}.conf"
+
+                    echo -e "${GREEN}${REMOVE_IFACE} has been removed successfully.${NC}"
+                else
+                    echo -e "${RED}No such interface found: ${REMOVE_IFACE}.${NC}"
+                fi
+                ;;
+
+            3)
+                echo -e "${INFO}Exiting WireGuard Configuration Menu.${NC}"
+                break
+                ;;
+
+            *)
+                echo -e "${RED}Invalid option. Please choose 1, 2, or 3.${NC}"
+                ;;
+        esac
+    done
+}
 
 SYSCTL_CONF="/etc/sysctl.conf"
 BACKUP_CONF="/etc/sysctl.conf.backup"
