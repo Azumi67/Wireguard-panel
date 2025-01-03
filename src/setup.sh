@@ -887,153 +887,92 @@ EOL
 
 }
 
-
-
-wireguard_panel() {
-    echo -e "\033[92m ^ ^\033[0m"
-    echo -e "\033[92m(\033[91mO,O\033[92m)\033[0m"
-    echo -e "\033[92m(   ) \033[92mWireguard Service env\033[0m"
-    echo -e '\033[92m "-"\033[93m══════════════════════════════════\033[0m'
-    echo -e "${INFO}[INFO]Wireguard Service${NC}"
-    echo -e '\033[93m══════════════════════════════════\033[0m'
-
-    APP_FILE="$SCRIPT_DIR/app.py"
-    VENV_DIR="$SCRIPT_DIR/venv"
-    SERVICE_FILE="/etc/systemd/system/wireguard-panel.service"
-
-    if [ ! -f "$APP_FILE" ]; then
-        echo -e "${RED}[Error] $APP_FILE not found. make sure that Wireguard panel is in the correct directory.${NC}"
-        echo -e "${CYAN}Press Enter to continue...${NC}" && read
-        return 1
-    fi
-
-    if [ ! -d "$VENV_DIR" ]; then
-        echo -e "${RED}[Error] Virtual env not found in $VENV_DIR. install it first from the script menu.${NC}"
-        echo -e "${CYAN}Press Enter to continue...${NC}" && read
-        return 1
-    fi
-
-    sudo bash -c "cat > $SERVICE_FILE" <<EOL
-[Unit]
-Description=Wireguard Panel
-After=network.target
-
-[Service]
-User=$(whoami)
-WorkingDirectory=$SCRIPT_DIR
-ExecStart=$VENV_DIR/bin/python3 $APP_FILE
-Restart=always
-Environment=PATH=$VENV_DIR/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-Environment=LANG=en_US.UTF-8
-Environment=LC_ALL=en_US.UTF-8
-
-[Install]
-WantedBy=multi-user.target
-EOL
-
-    sudo chmod 644 "$SERVICE_FILE"
-    sudo systemctl daemon-reload
-    sudo systemctl enable wireguard-panel.service
-    sudo systemctl restart wireguard-panel.service
-
-    if [ "$(sudo systemctl is-active wireguard-panel.service)" = "active" ]; then
-        echo -e "${LIGHT_GREEN}[Success] Wireguard Panel service is running successfully.${NC}"
-    else
-        echo -e "${RED}[Error] Couldn't start the Wireguard Panel service.${NC}"
-        echo -e "${CYAN}Press Enter to continue...${NC}" && read
-        return 1
-    fi
-
-    show_flask_info
-
-    echo -e "${CYAN}Press Enter to continue...${NC}" && read
-}
-
-wireguardconf_menu() {
+wireguardconf() {
     echo -e '\033[93m══════════════════════════════════════════════════\033[0m'
 
-    echo -e "${YELLOW}WireGuard Configuration Menu:${NC}"
-    echo -e "1. Add a WireGuard Interface"
-    echo -e "2. Remove a WireGuard Interface"
-    echo -e "3. Exit"
+    echo -e "${YELLOW}1) Add Interface\n2) Remove Interface${NC}"
+    echo -e "${YELLOW}Choose an option:${NC} \c"
+    read -r OPTION
 
-    while true; do
-        echo -e "${YELLOW}Choose an option:${NC} \c"
-        read -e OPTION
-        case $OPTION in
-            1)
-                while true; do
-                    echo -e "${YELLOW}Enter the ${BLUE}Wireguard ${GREEN}interface name${NC} (example wg0):${NC} \c"
-                    read -e WG_NAME
-                    if [ -n "$WG_NAME" ]; then
-                        echo -e "${INFO}[INFO] Interface Name set to: ${GREEN}$WG_NAME${NC}"
-                        break
-                    else
-                        echo -e "${RED}Interface name cannot be empty. Please try again.${NC}"
-                    fi
-                done
+    if [ "$OPTION" = "1" ]; then
+        while true; do
+            echo -e "${YELLOW}Enter the ${BLUE}Wireguard ${GREEN}interface name${NC} (example wg0):${NC} \c"
+            read -e WG_NAME
 
-                local WG_CONFIG="/etc/wireguard/${WG_NAME}.conf"
-                local PRIVATE_KEY
-                PRIVATE_KEY=$(wg genkey)
+            if [ -z "$WG_NAME" ]; then
+                echo -e "${RED}Interface name cannot be empty. Please try again.${NC}"
+                continue
+            fi
 
-                local SERVER_INTERFACE
-                SERVER_INTERFACE=$(ip route | grep default | awk '{print $5}' | head -n1)
-                [ -z "${SERVER_INTERFACE}" ] && SERVER_INTERFACE="eth0"
+            if ip link show "$WG_NAME" >/dev/null 2>&1; then
+                echo -e "${RED}Interface $WG_NAME already exists. Please enter another name.${NC}"
+            else
+                echo -e "${INFO}[INFO] Interface Name set to: ${GREEN}$WG_NAME${NC}"
+                break
+            fi
+        done
 
-                while true; do
-                    echo -e "${YELLOW}Enter the ${BLUE}Wireguard ${GREEN}private IP address${NC} (example 176.66.66.1/24):${NC} \c"
-                    read -e WG_ADDRESS
-                    if [[ "$WG_ADDRESS" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/[0-9]+$ ]]; then
-                        echo -e "${INFO}[INFO] Private IP Address set to: ${GREEN}$WG_ADDRESS${NC}"
-                        break
-                    else
-                        echo -e "${RED}Wrong IP address format. Please try again.${NC}"
-                    fi
-                done
+        local WG_CONFIG="/etc/wireguard/${WG_NAME}.conf"
+        local PRIVATE_KEY
+        PRIVATE_KEY=$(wg genkey)
 
-                while true; do
-                    echo -e "${YELLOW}Enter the ${BLUE}Wireguard ${GREEN}listen port${NC} (example 20820):${NC} \c"
-                    read -e WG_PORT
-                    if [[ "$WG_PORT" =~ ^[0-9]+$ ]] && [ "$WG_PORT" -ge 1 ] && [ "$WG_PORT" -le 65535 ]; then
-                        echo -e "${INFO}[INFO] Listen Port set to: ${GREEN}$WG_PORT${NC}"
-                        break
-                    else
-                        echo -e "${RED}Wrong port number. Please enter a valid port between 1 and 65535.${NC}"
-                    fi
-                done
+        local SERVER_INTERFACE
+        SERVER_INTERFACE=$(ip route | grep default | awk '{print $5}' | head -n1)
+        [ -z "${SERVER_INTERFACE}" ] && SERVER_INTERFACE="eth0"
 
-                while true; do
-                    echo -e "${YELLOW}Enter the ${BLUE}MTU ${GREEN}size${NC} (example 1420):${NC} \c"
-                    read -e MTU
-                    if [[ "$MTU" =~ ^[0-9]+$ ]]; then
-                        echo -e "${INFO}[INFO] MTU Size set to: ${GREEN}$MTU${NC}"
-                        break
-                    else
-                        echo -e "${RED}Wrong MTU size. Please try again.${NC}"
-                    fi
-                done
+        while true; do
+            echo -e "${YELLOW}Enter the ${BLUE}Wireguard ${GREEN}private IP address${NC} (example 176.66.66.1/24):${NC} \c"
+            read -e WG_ADDRESS
+            if [[ "$WG_ADDRESS" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/[0-9]+$ ]]; then
+                echo -e "${INFO}[INFO] Private IP Address set to: ${GREEN}$WG_ADDRESS${NC}"
+                break
+            else
+                echo -e "${RED}Wrong IP address format. Please try again.${NC}"
+            fi
+        done
 
-                while true; do
-                    echo -e "${YELLOW}Enter the ${BLUE}DNS ${GREEN}servers ${NC}(example 1.1.1.1):${NC} \c"
-                    read -e DNS
-                    if [ -n "$DNS" ]; then
-                        echo -e "${INFO}[INFO] DNS Servers set to: ${GREEN}$DNS${NC}"
-                        break
-                    else
-                        echo -e "${RED}DNS servers cannot be empty. Please try again.${NC}"
-                    fi
-                done
+        while true; do
+            echo -e "${YELLOW}Enter the ${BLUE}Wireguard ${GREEN}listen port${NC} (example 20820):${NC} \c"
+            read -e WG_PORT
+            if [[ "$WG_PORT" =~ ^[0-9]+$ ]] && [ "$WG_PORT" -ge 1 ] && [ "$WG_PORT" -le 65535 ]; then
+                echo -e "${INFO}[INFO] Listen Port set to: ${GREEN}$WG_PORT${NC}"
+                break
+            else
+                echo -e "${RED}Wrong port number. Please enter a valid port between 1 and 65535.${NC}"
+            fi
+        done
 
-                echo -e '\033[93m══════════════════════════════════════════════════\033[0m'
+        while true; do
+            echo -e "${YELLOW}Enter the ${BLUE}MTU ${GREEN}size${NC} (example 1420):${NC} \c"
+            read -e MTU
+            if [[ "$MTU" =~ ^[0-9]+$ ]]; then
+                echo -e "${INFO}[INFO] MTU Size set to: ${GREEN}$MTU${NC}"
+                break
+            else
+                echo -e "${RED}Wrong MTU size. Please try again.${NC}"
+            fi
+        done
 
-                if [ ! -d "/etc/wireguard" ]; then
-                    echo -e "${INFO}[INFO] Creating /etc/wireguard directory...${NC}"
-                    sudo mkdir -p /etc/wireguard
-                fi
+        while true; do
+            echo -e "${YELLOW}Enter the ${BLUE}DNS ${GREEN}servers ${NC}(example 1.1.1.1):${NC} \c"
+            read -e DNS
+            if [ -n "$DNS" ]; then
+                echo -e "${INFO}[INFO] DNS Servers set to: ${GREEN}$DNS${NC}"
+                break
+            else
+                echo -e "${RED}DNS servers cannot be empty. Please try again.${NC}"
+            fi
+        done
 
-                echo -e "${INFO}[INFO] Generating Wireguard config at ${WG_CONFIG}...${NC}"
-                cat <<EOL > "${WG_CONFIG}"
+        echo -e '\033[93m══════════════════════════════════════════════════\033[0m'
+
+        if [ ! -d "/etc/wireguard" ]; then
+            echo -e "${INFO}[INFO] Creating /etc/wireguard directory...${NC}"
+            sudo mkdir -p /etc/wireguard
+        fi
+
+        echo -e "${INFO}[INFO] Generating Wireguard config at ${WG_CONFIG}...${NC}"
+        cat <<EOL > "${WG_CONFIG}"
 [Interface]
 Address = ${WG_ADDRESS}
 ListenPort = ${WG_PORT}
@@ -1052,55 +991,54 @@ PostDown = iptables -D FORWARD -i ${WG_NAME} -j ACCEPT
 PostDown = iptables -t nat -D POSTROUTING -o ${SERVER_INTERFACE} -j MASQUERADE
 EOL
 
-                chmod 600 "${WG_CONFIG}" || { echo -e "${RED}[ERROR] Couldn't set permissions on ${WG_CONFIG}.${NC}"; return 1; }
+        chmod 600 "${WG_CONFIG}" || { echo -e "${RED}[ERROR] Couldn't set permissions on ${WG_CONFIG}.${NC}"; return 1; }
 
-                echo -e "${INFO}[INFO] Bringing up Wireguard interface ${WG_NAME}...${NC}"
-                if ! wg-quick up "${WG_NAME}"; then
-                    echo -e "${RED}[ERROR] Couldn't bring up ${WG_NAME}. Check config or logs.${NC}"
-                    return 1
-                fi
+        echo -e "${INFO}[INFO] Bringing up Wireguard interface ${WG_NAME}...${NC}"
+        if ! wg-quick up "${WG_NAME}"; then
+            echo -e "${RED}[ERROR] Couldn't bring up ${WG_NAME}. Check config or logs.${NC}"
+            return 1
+        fi
 
-                echo -e "${INFO}[INFO] Enabling Wireguard interface ${WG_NAME}${NC}"
-                if ! systemctl enable "wg-quick@${WG_NAME}"; then
-                    echo -e "${RED}[ERROR] Couldn't enable wg-quick@${WG_NAME} on boot.${NC}"
-                    return 1
-                fi
+        echo -e "${INFO}[INFO] Enabling Wireguard interface ${WG_NAME}${NC}"
+        if ! systemctl enable "wg-quick@${WG_NAME}"; then
+            echo -e "${RED}[ERROR] Couldn't enable wg-quick@${WG_NAME} on boot.${NC}"
+            return 1
+        fi
 
-                echo -e "\n${GREEN}Wireguard interface ${WG_NAME} created & activated successfully!${NC}"
-                ;;
+        echo -e "\n${GREEN}Wireguard interface ${WG_NAME} created & activated successfully!${NC}"
 
-            2)
-                echo -e "${YELLOW}Available WireGuard interfaces:${NC}"
-                ls /etc/wireguard/*.conf 2>/dev/null | awk -F'/' '{print $NF}' | sed 's/\.conf$//'
+    elif [ "$OPTION" = "2" ]; then
+        echo -e "${YELLOW}Available Wireguard Interfaces:${NC}"
+        ls /etc/wireguard/*.conf 2>/dev/null | awk -F'/' '{print $NF}' | sed 's/.conf$//'
 
-                echo -e "${YELLOW}Enter the name of the interface to remove:${NC} \c"
-                read -e REMOVE_IFACE
+        while true; do
+            echo -e "${YELLOW}Enter the ${BLUE}Wireguard ${GREEN}interface name to delete${NC}:${NC} \c"
+            read -r WG_NAME
 
-                if [ -f "/etc/wireguard/${REMOVE_IFACE}.conf" ]; then
-                    echo -e "${INFO}[INFO] Stopping and disabling ${REMOVE_IFACE}...${NC}"
-                    wg-quick down "${REMOVE_IFACE}" 2>/dev/null
-                    systemctl disable "wg-quick@${REMOVE_IFACE}" 2>/dev/null
+            if [ -f "/etc/wireguard/${WG_NAME}.conf" ]; then
+                echo -e "${INFO}[INFO] Removing Wireguard interface ${GREEN}${WG_NAME}${NC}..."
 
-                    echo -e "${INFO}[INFO] Removing configuration file for ${REMOVE_IFACE}...${NC}"
-                    rm -f "/etc/wireguard/${REMOVE_IFACE}.conf"
-
-                    echo -e "${GREEN}${REMOVE_IFACE} has been removed successfully.${NC}"
+                if wg-quick down "$WG_NAME"; then
+                    rm -f "/etc/wireguard/${WG_NAME}.conf"
+                    systemctl disable "wg-quick@${WG_NAME}" >/dev/null 2>&1
+                    echo -e "${GREEN}Wireguard interface ${WG_NAME} removed successfully!${NC}"
                 else
-                    echo -e "${RED}No such interface found: ${REMOVE_IFACE}.${NC}"
+                    echo -e "${RED}[ERROR] Couldn't bring down ${WG_NAME}. Please check.${NC}"
                 fi
-                ;;
-
-            3)
-                echo -e "${INFO}Exiting WireGuard Configuration Menu.${NC}"
                 break
-                ;;
+            else
+                echo -e "${RED}Interface ${WG_NAME} does not exist. Please try again.${NC}"
+            fi
+        done
+    else
+        echo -e "${RED}Invalid option. Exiting.${NC}"
+        return 1
+    fi
 
-            *)
-                echo -e "${RED}Invalid option. Please choose 1, 2, or 3.${NC}"
-                ;;
-        esac
-    done
+    echo -e "${CYAN}Press Enter to continue...${NC}"
+    read -r
 }
+
 
 SYSCTL_CONF="/etc/sysctl.conf"
 BACKUP_CONF="/etc/sysctl.conf.backup"
