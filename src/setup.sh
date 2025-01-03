@@ -521,33 +521,56 @@ setup_virtualenv() {
 }
 
 setup_permissions() {
-    echo -e "\033[92m ^ ^\033[0m\n\033[92m(\033[91mO,O\033[92m)\033[0m\n\033[92m(   ) \033[92mRead & Write permissions\033[0m"
+    echo -e "\033[92m ^ ^\033[0m"
+    echo -e "\033[92m(\033[91mO,O\033[92m)\033[0m"
+    echo -e "\033[92m(   ) \033[92mRead & Write permissions\033[0m"
     echo -e '\033[92m "-"\033[93m══════════════════════════════════\033[0m'
     echo -e "${INFO}[INFO]${YELLOW}Setting permissions for files & directories...${NC}"
     echo -e '\033[93m══════════════════════════════════\033[0m'
 
-    # List of files and directories to set permissions
-    declare -A paths=(
-        ["$SCRIPT_DIR/config.yaml"]=644
-        ["$SCRIPT_DIR/db"]=600
-        ["$SCRIPT_DIR/backups"]=700
-        ["$TELEGRAM_DIR/telegram.yaml"]=644
-        ["$TELEGRAM_DIR/config.json"]=644
-        ["$SCRIPT_DIR/install_progress.json"]=644
-        ["$SCRIPT_DIR/api.json"]=644
-        ["$SCRIPT_DIR/setup.sh"]=744
-        ["$SCRIPT_DIR/install_telegram.sh"]=744
-        ["$SCRIPT_DIR/install_telegram-fa.sh"]=744
-        ["$SCRIPT_DIR/static/fonts"]=644
-    )
+    CONFIG_FILE="$SCRIPT_DIR/config.yaml"
+    DB_DIR="$SCRIPT_DIR/db"
+    BACKUPS_DIR="$SCRIPT_DIR/backups"
+    TELEGRAM_DIR="$SCRIPT_DIR/telegram"
+    TELEGRAM_YAML="$TELEGRAM_DIR/telegram.yaml"
+    TELEGRAM_JSON="$TELEGRAM_DIR/config.json"
+    INSTALL_PROGRESS_JSON="$SCRIPT_DIR/install_progress.json"
+    API_JSON="$SCRIPT_DIR/api.json"
+    STATIC_FONTS_DIR="$SCRIPT_DIR/static/fonts"
 
-    # Loop through paths to set permissions
-    for path in "${!paths[@]}"; do
-        echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $path...${NC}"
-        chmod ${paths[$path]} "$path" 2>/dev/null || echo -e "${WARNING}Warning: Couldn't set permissions for $path.${NC}"
-    done
+    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $CONFIG_FILE...${NC}"
+    chmod 644 "$CONFIG_FILE" 2>/dev/null || echo -e "${WARNING}Warning: Couldn't set permissions for $CONFIG_FILE.${NC}"
 
-    # Check and set permissions for /etc/wireguard if it exists
+    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $DB_DIR...${NC}"
+    chmod -R 600 "$DB_DIR" 2>/dev/null || echo -e "${WARNING}Warning: Couldn't set permissions for $DB_DIR.${NC}"
+
+    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $BACKUPS_DIR...${NC}"
+    chmod -R 700 "$BACKUPS_DIR" 2>/dev/null || echo -e "${WARNING}Warning: Couldn't set permissions for $BACKUPS_DIR.${NC}"
+
+    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $TELEGRAM_YAML...${NC}"
+    chmod 644 "$TELEGRAM_YAML" 2>/dev/null || echo -e "${WARNING}Warning: $TELEGRAM_YAML not found.${NC}"
+
+    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $TELEGRAM_JSON...${NC}"
+    chmod 644 "$TELEGRAM_JSON" 2>/dev/null || echo -e "${WARNING}Warning: $TELEGRAM_JSON not found.${NC}"
+
+    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $INSTALL_PROGRESS_JSON...${NC}"
+    chmod 644 "$INSTALL_PROGRESS_JSON" 2>/dev/null || echo -e "${WARNING}Warning: $INSTALL_PROGRESS_JSON not found.${NC}"
+
+    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $API_JSON...${NC}"
+    chmod 644 "$API_JSON" 2>/dev/null || echo -e "${WARNING}Warning: $API_JSON not found.${NC}"
+
+    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $SCRIPT_DIR/setup.sh...${NC}"
+    chmod 744 "$SCRIPT_DIR/setup.sh" 2>/dev/null || echo -e "${WARNING}Warning: setup.sh not found.${NC}"
+
+    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $SCRIPT_DIR/install_telegram.sh...${NC}"
+    chmod 744 "$SCRIPT_DIR/install_telegram.sh" 2>/dev/null || echo -e "${WARNING}Warning: install_telegram.sh not found.${NC}"
+
+    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $SCRIPT_DIR/install_telegram-fa.sh...${NC}"
+    chmod 744 "$SCRIPT_DIR/install_telegram-fa.sh" 2>/dev/null || echo -e "${WARNING}Warning: install_telegram-fa.sh not found.${NC}"
+
+    echo -e "${INFO}[INFO]${YELLOW}Setting permissions for $STATIC_FONTS_DIR...${NC}"
+    chmod -R 644 "$STATIC_FONTS_DIR" 2>/dev/null || echo -e "${WARNING}Warning: $STATIC_FONTS_DIR not found.${NC}"
+
     if [ -d "/etc/wireguard" ]; then
         echo -e "${INFO}[INFO]${YELLOW}Setting permissions for /etc/wireguard...${NC}"
         sudo chmod -R 755 /etc/wireguard || echo -e "${ERROR}Couldn't set permissions for /etc/wireguard. use sudo -i.${NC}"
@@ -555,8 +578,8 @@ setup_permissions() {
         echo -e "${WARNING}/etc/wireguard directory does not exist.${NC}"
     fi
 
-    # Set permissions for all other files and directories
     echo -e "${INFO}[INFO]${YELLOW}Checking permissions for other directories...${NC}"
+
     find "$SCRIPT_DIR" -type f ! -path "$SCRIPT_DIR/venv/*" -exec chmod 644 {} \; || echo -e "${WARNING}Could not update file permissions in $SCRIPT_DIR.${NC}"
     find "$SCRIPT_DIR" -type d -exec chmod 755 {} \; || echo -e "${WARNING}Could not update directory permissions in $SCRIPT_DIR.${NC}"
 
@@ -565,41 +588,42 @@ setup_permissions() {
 
 setup_tls() {
     echo -e '\033[93m══════════════════════════════════\033[0m'
-    echo -e "${YELLOW}Do you want to ${GREEN}enable TLS${YELLOW}? ${GREEN}[y]${NC}/${RED}[n]${NC}: ${NC} \c"
+    echo -e "${YELLOW}Do you want to ${GREEN}enable TLS${YELLOW}? ${GREEN}[yes]${NC}/${RED}[no]${NC}: ${NC} \c"
 
     while true; do
         read -e ENABLE_TLS
-        ENABLE_TLS=$(echo "$ENABLE_TLS" | tr '[:upper:]' '[:lower:]')
-           
-        if [[ "$ENABLE_TLS" == "y" || "$ENABLE_TLS" == "n" ]]; then
-            echo -e "${INFO}[INFO] TLS enabled: ${GREEN}$ENABLE_TLS${NC}"
+        ENABLE_TLS=$(echo "$ENABLE_TLS" | tr '[:upper:]' '[:lower:]')  
+        
+        if [[ "$ENABLE_TLS" == "yes" || "$ENABLE_TLS" == "no" ]]; then
+            echo -e "${INFO}[INFO] TLS enabled: ${GREEN}$ENABLE_TLS${NC}" 
             break
+        else
+            echo -e "${RED}Wrong input. Please type ${GREEN}yes${RED} or ${RED}no${NC}: \c"
         fi
-        echo -e "${RED}Wrong input. Please type ${GREEN}yes${RED} or ${RED}no${NC}: \c"
     done
 
-    if [ "$ENABLE_TLS" == "yes" ]; then
-        # Function to get user input with validation
-        get_input() {
-            local prompt="$1"
-            local regex="$2"
-            local error_msg="$3"
-            local result
-            while true; do
-                echo -e "$prompt"
-                read -e result
-                if [[ "$result" =~ $regex ]]; then
-                    echo -e "${INFO}[INFO] $error_msg: ${GREEN}$result${NC}"
-                    echo "$result"
-                    break
-                fi
-                echo -e "${RED}$error_msg${NC}"
-            done
-        }
+    if [ "$ENABLE_TLS" = "yes" ]; then
+        while true; do
+            echo -e "${YELLOW}Enter your ${GREEN}Sub-domain name${YELLOW}:${NC} \c"
+            read -e DOMAIN_NAME
+            if [ -n "$DOMAIN_NAME" ]; then
+                echo -e "${INFO}[INFO] Sub-domain set to: ${GREEN}$DOMAIN_NAME${NC}" 
+                break
+            else
+                echo -e "${RED}Sub-domain name cannot be empty. Please try again.${NC}"
+            fi
+        done
 
-        # Get domain name and email with validation
-        DOMAIN_NAME=$(get_input "${YELLOW}Enter your ${GREEN}Sub-domain name${YELLOW}:${NC}" "^.+$" "Sub-domain set to")
-        EMAIL=$(get_input "${YELLOW}Enter your ${GREEN}Email address${YELLOW}:${NC}" "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" "Email set to")
+        while true; do
+            echo -e "${YELLOW}Enter your ${GREEN}Email address${YELLOW}:${NC} \c"
+            read -e EMAIL
+            if [[ "$EMAIL" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
+                echo -e "${INFO}[INFO] Email set to: ${GREEN}$EMAIL${NC}" 
+                break
+            else
+                echo -e "${RED}Wrong email address. Please enter a valid email.${NC}"
+            fi
+        done
 
         echo -e "${INFO}[INFO]${YELLOW} Requesting a TLS certificate from Let's Encrypt...${NC}"
 
@@ -611,7 +635,6 @@ setup_tls() {
 
             CONFIG_FILE="$SCRIPT_DIR/config.yaml"
 
-            # Create config.yaml if it doesn't exist
             if [ ! -f "$CONFIG_FILE" ]; then
                 echo -e "${INFO}[INFO]${YELLOW} config.yaml does not exist. Creating it...${NC}"
                 cat <<EOF > "$CONFIG_FILE"
@@ -1106,66 +1129,6 @@ EOL
 
     echo -e "${CYAN}Press Enter to back the main menu...${NC}"
     read -r
-}
-
-wireguard_panel() {
-    echo -e "\033[92m ^ ^\033[0m"
-    echo -e "\033[92m(\033[91mO,O\033[92m)\033[0m"
-    echo -e "\033[92m(   ) \033[92mWireguard Service env\033[0m"
-    echo -e '\033[92m "-"\033[93m══════════════════════════════════\033[0m'
-    echo -e "${INFO}[INFO]Wireguard Service${NC}"
-    echo -e '\033[93m══════════════════════════════════\033[0m'
-
-    APP_FILE="$SCRIPT_DIR/app.py"
-    VENV_DIR="$SCRIPT_DIR/venv"
-    SERVICE_FILE="/etc/systemd/system/wireguard-panel.service"
-
-    if [ ! -f "$APP_FILE" ]; then
-        echo -e "${RED}[Error] $APP_FILE not found. make sure that Wireguard panel is in the correct directory.${NC}"
-        echo -e "${CYAN}Press Enter to continue...${NC}" && read
-        return 1
-    fi
-
-    if [ ! -d "$VENV_DIR" ]; then
-        echo -e "${RED}[Error] Virtual env not found in $VENV_DIR. install it first from the script menu.${NC}"
-        echo -e "${CYAN}Press Enter to continue...${NC}" && read
-        return 1
-    fi
-
-    sudo bash -c "cat > $SERVICE_FILE" <<EOL
-[Unit]
-Description=Wireguard Panel
-After=network.target
-
-[Service]
-User=$(whoami)
-WorkingDirectory=$SCRIPT_DIR
-ExecStart=$VENV_DIR/bin/python3 $APP_FILE
-Restart=always
-Environment=PATH=$VENV_DIR/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-Environment=LANG=en_US.UTF-8
-Environment=LC_ALL=en_US.UTF-8
-
-[Install]
-WantedBy=multi-user.target
-EOL
-
-    sudo chmod 644 "$SERVICE_FILE"
-    sudo systemctl daemon-reload
-    sudo systemctl enable wireguard-panel.service
-    sudo systemctl restart wireguard-panel.service
-
-    if [ "$(sudo systemctl is-active wireguard-panel.service)" = "active" ]; then
-        echo -e "${LIGHT_GREEN}[Success] Wireguard Panel service is running successfully.${NC}"
-    else
-        echo -e "${RED}[Error] Couldn't start the Wireguard Panel service.${NC}"
-        echo -e "${CYAN}Press Enter to continue...${NC}" && read
-        return 1
-    fi
-
-    show_flask_info
-
-    echo -e "${CYAN}Press Enter to continue...${NC}" && read
 }
 
 while true; do
