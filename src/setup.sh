@@ -193,6 +193,56 @@ select_stuff() {
     esac
 }
 
+manage_sysctl() {
+    local SYSCTL_CONF="/etc/sysctl.conf"
+    local BACKUP_CONF="/etc/sysctl.conf.backup"
+    declare -A SETTINGS=(
+        ["net.ipv4.ip_forward"]="1"
+        ["net.ipv6.conf.all.disable_ipv6"]="0"
+        ["net.ipv6.conf.default.disable_ipv6"]="0"
+        ["net.ipv6.conf.all.forwarding"]="1"
+    )
+
+    if [ ! -f "$BACKUP_CONF" ]; then
+        sudo cp "$SYSCTL_CONF" "$BACKUP_CONF" || {
+            echo -e "${ERROR}Failed to create backup. Exiting.${NC}"
+            exit 1
+        }
+        echo -e "${INFO}Backup created at $BACKUP_CONF${NC}"
+    else
+        echo -e "${INFO}Backup already exists at $BACKUP_CONF${NC}"
+    fi
+
+    for key in "${!SETTINGS[@]}"; do
+        value="${SETTINGS[$key]}"
+        current_value=$(grep -E "^$key" "$SYSCTL_CONF" | awk -F '=' '{print $2}' | xargs)
+        if [[ "$current_value" != "$value" ]]; then
+            echo "$key = $value" | sudo tee -a "$SYSCTL_CONF" > /dev/null || {
+                echo -e "${ERROR}Failed to write $key=$value to $SYSCTL_CONF. Restoring from backup.${NC}"
+                sudo cp "$BACKUP_CONF" "$SYSCTL_CONF"
+                sudo sysctl -p
+                exit 1
+            }
+            sudo sysctl -w "$key=$value" || {
+                echo -e "${ERROR}Failed to apply $key=$value. Restoring from backup.${NC}"
+                sudo cp "$BACKUP_CONF" "$SYSCTL_CONF"
+                sudo sysctl -p
+                exit 1
+            }
+            echo -e "${INFO}Applied $key=$value${NC}"
+        else
+            echo -e "${INFO}$key is already set to $value${NC}"
+        fi
+    done
+
+    sudo sysctl -p || {
+        echo -e "${ERROR}Failed to reload sysctl settings. Restoring from backup.${NC}"
+        sudo cp "$BACKUP_CONF" "$SYSCTL_CONF"
+        sudo sysctl -p
+        exit 1
+    }
+}
+
 restart_services() {
     echo -e "${CYAN}Which service would you like to restart?${NC}"
     echo -e "${CYAN}════════════════════════════════════════${NC}"
@@ -999,53 +1049,5 @@ EOL
     echo -e "${CYAN}Press Enter to continue...${NC}"
     read -r
 }
-manage_sysctl() {
-    local SYSCTL_CONF="/etc/sysctl.conf"
-    local BACKUP_CONF="/etc/sysctl.conf.backup"
-    declare -A SETTINGS=(
-        ["net.ipv4.ip_forward"]="1"
-        ["net.ipv6.conf.all.disable_ipv6"]="0"
-        ["net.ipv6.conf.default.disable_ipv6"]="0"
-        ["net.ipv6.conf.all.forwarding"]="1"
-    )
 
-    if [ ! -f "$BACKUP_CONF" ]; then
-        sudo cp "$SYSCTL_CONF" "$BACKUP_CONF" || {
-            echo -e "${ERROR}Failed to create backup. Exiting.${NC}"
-            exit 1
-        }
-        echo -e "${INFO}Backup created at $BACKUP_CONF${NC}"
-    else
-        echo -e "${INFO}Backup already exists at $BACKUP_CONF${NC}"
-    fi
-
-    for key in "${!SETTINGS[@]}"; do
-        value="${SETTINGS[$key]}"
-        current_value=$(grep -E "^$key" "$SYSCTL_CONF" | awk -F '=' '{print $2}' | xargs)
-        if [[ "$current_value" != "$value" ]]; then
-            echo "$key = $value" | sudo tee -a "$SYSCTL_CONF" > /dev/null || {
-                echo -e "${ERROR}Failed to write $key=$value to $SYSCTL_CONF. Restoring from backup.${NC}"
-                sudo cp "$BACKUP_CONF" "$SYSCTL_CONF"
-                sudo sysctl -p
-                exit 1
-            }
-            sudo sysctl -w "$key=$value" || {
-                echo -e "${ERROR}Failed to apply $key=$value. Restoring from backup.${NC}"
-                sudo cp "$BACKUP_CONF" "$SYSCTL_CONF"
-                sudo sysctl -p
-                exit 1
-            }
-            echo -e "${INFO}Applied $key=$value${NC}"
-        else
-            echo -e "${INFO}$key is already set to $value${NC}"
-        fi
-    done
-
-    sudo sysctl -p || {
-        echo -e "${ERROR}Failed to reload sysctl settings. Restoring from backup.${NC}"
-        sudo cp "$BACKUP_CONF" "$SYSCTL_CONF"
-        sudo sysctl -p
-        exit 1
-    }
-}
 
