@@ -30,27 +30,43 @@ Project name : Wireguard panel with English & Persian management bot
 
  <div align="left">
   <details>
-    <summary><strong><img src="https://github.com/user-attachments/assets/bf3c8113-cdd1-4c57-a744-796d7530d565" alt="Image"> Different Timezone problems (read)</strong></summary>
+    <summary><strong><img src="https://github.com/user-attachments/assets/bf3c8113-cdd1-4c57-a744-796d7530d565" alt="Image"> Timezone problems (read)</strong></summary>
 
 ------------------------------------ 
 
-- If you have installed an optimizer and the time and usage calculation stops, it is likely due to two conflicting timezones in your system. Until this is resolved, the issue will not be fixed.
-- You need to use the following commands to synchronize your timezone and local time.
-- After syncing, you should reset the panel.
+- If, after installing an Optimizer or making system changes, the panel stops updating **time/traffic calculations** (or updates incorrectly), a common cause is a **timezone mismatch** or **system clock not being synchronized via NTP**.
+- To work correctly, the system timezone must be consistent and stable. If `/etc/timezone` exists, it should not contradict `/etc/localtime`.
+
   
 ```
-cat /etc/timezone
-you should see something like this : Etc/UTC, Europe/Berlin
-ls -l /etc/localtime
-you will see something like this :  /usr/share/zoneinfo/Europe/Berlin
-there is a difference between then and it should be fixed 
-echo "Europe/Berlin" | sudo tee /etc/timezone
-sudo dpkg-reconfigure -f noninteractive tzdata
-cat /etc/timezone
-ls -l /etc/localtime
-make sure that both of timezone are similar.
 timedatectl
-you are good to go, reset the wireguard panel
+cat /etc/timezone 2>/dev/null || true
+readlink -f /etc/localtime
+date
+**Set the correct timezone**
+First, find the timezone name (example: Berlin):
+timedatectl list-timezones | grep -i berlin
+
+Then set it:
+sudo timedatectl set-timezone Europe/Berlin
+sudo timedatectl set-ntp true
+
+If you are on Debian/Ubuntu, you can also reconfigure tzdata to ensure everything is aligned:
+sudo dpkg-reconfigure -f noninteractive tzdata
+
+Confirm the timezone and localtime now match:
+timedatectl
+cat /etc/timezone 2>/dev/null || true
+readlink -f /etc/localtime
+date
+
+Note: If /etc/timezone exists, it should contain a single timezone (one line), and /etc/localtime should point to the same zoneinfo path.
+
+Restart the panel services
+sudo systemctl restart wireguard-panel
+sudo systemctl restart telegram-bot-en.service 
+sudo systemctl restart telegram-bot-fa.service 
+
 ```
 
 ------------------------------------ 
