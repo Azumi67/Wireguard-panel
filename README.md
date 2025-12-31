@@ -57,33 +57,76 @@ bash <(curl -Ls https://raw.githubusercontent.com/Azumi67/Wireguard-panel/refs/h
 </div>
  <div align="right">
   <details>
-    <summary><strong><img src="https://github.com/user-attachments/assets/bf3c8113-cdd1-4c57-a744-796d7530d565" alt="Image"> مشکلات تایم زون مختلف (بخوانید)</strong></summary>
+    <summary><strong><img src="https://github.com/user-attachments/assets/bf3c8113-cdd1-4c57-a744-796d7530d565" alt="Image"> مشکلات تایم زون (بخوانید)</strong></summary>
 
 ------------------------------------ 
 
-- اگر اوپتیمایزر نصب کردید و محاسبه زمان و حجم توقف کرد، حتما به خاطر وجود دو تایم زون در سیستم شما است که تا برطرف نشود، مشکل شما هم حل نمیشود
-- باید از دستورات زیر استفاده نمایید تا تایم زون و لوکال تایم با هم سینک باشند
-- بعد از سینک کردن ان، باید پنل را ریست نمایید
+- اگر بعد از نصب Optimizer یا تغییرات سیستمی، محاسبه‌ی زمان/حجم در پنل متوقف شد یا درست به‌روزرسانی نشد، یکی از دلایل رایج ناهماهنگی Timezone سیستم یا عدم همگام‌سازی ساعت با NTP است و برای عملکرد درست، باید Timezone سیستم یکسان و پایدار باشد (و در صورت وجود، /etc/timezone هم با /etc/localtime تناقض نداشته باشد).
  <div align="left">
+   
+```
+timedatectl
+cat /etc/timezone 2>/dev/null || true
+readlink -f /etc/localtime
+date
+```
+
+ <div align="right">
+   
+- تنظیم Timezone
+ابتدا نام Timezone را پیدا کنید (مثال: Berlin):
+ <div align="left">
+   
+```  
+timedatectl list-timezones | grep -i berlin
+```
+
+ <div align="right">
+   
+- سپس تنظیم کنید:
+
+ <div align="left">
+   
+```
+sudo timedatectl set-timezone Europe/Berlin
+sudo timedatectl set-ntp true
+```
+
+<div align="right">
+  
+- همسان‌سازی tzdata
+  
+<div align="left">
   
 ```
-cat /etc/timezone
-به طور مثال این را میبینید : Etc/UTC, Europe/Berlin
-ls -l /etc/localtime
-به طور مثال این را میبینید :  /usr/share/zoneinfo/Europe/Berlin
-خب بین انها تضاد آست و باید درست شود
-echo "Europe/Berlin" | sudo tee /etc/timezone
 sudo dpkg-reconfigure -f noninteractive tzdata
-cat /etc/timezone
-ls -l /etc/localtime
-بررسی کنید هر دو یکی باشد
-timedatectl
-حالا اگر همه چی درست بود باید پنل را ریست نمایید
 ```
+<div align="right">
+  
+- بررسی دوباره
 
+<div align="left">
+  
+```
+timedatectl
+cat /etc/timezone 2>/dev/null || true
+readlink -f /etc/localtime
+date
+```
+<div align="right">
+  
+- نکته: خروجی /etc/timezone (اگر وجود داشت) باید یک Zone واحد باشد، و /etc/localtime هم باید به همان Zone اشاره کند.
+- ریست سرویس پنل
+<div align="left">
+  
+``` 
+sudo systemctl restart wireguard-panel
+sudo systemctl restart telegram-bot-en.service
+sudo systemctl restart telegram-bot-fa.service
+```
 ------------------------------------ 
 
-  </details>
+</details>
 </div>
  <div align="right">
   <details>
